@@ -2890,15 +2890,17 @@ function sendKakaoShare(){
     return;
   }
 
+  // 공유 링크의 도메인도 카카오 콘솔에 등록된 것이어야 합니다.
+  // 대시보드 자기 주소를 쓰면 JS SDK 도메인과 항상 일치하므로 도메인을 따로 등록할 필요가 없습니다.
+  const shareUrl = location.origin;
+
   Kakao.Share.sendDefault({
     objectType: 'text',
     text: message,
     link: {
-    mobileWebUrl: 'https://www.fiti.re.kr/web/contents/FT0505010000.do?schM=view&schStr=%EC%A0%84%EB%9E%B5%EA%B5%AC%EB%A7%A4%ED%8C%80',
-  webUrl: 'https://www.fiti.re.kr/web/contents/FT0505010000.do?schM=view&schStr=%EC%A0%84%EB%9E%B5%EA%B5%AC%EB%A7%A4%ED%8C%80'
-
-    },
-    
+      mobileWebUrl: shareUrl,
+      webUrl: shareUrl
+    }
   });
 }
 
