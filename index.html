@@ -795,21 +795,24 @@
       padding:34px 30px 28px;
       text-align:center;
     }
-    .save-logo{
-      width:120px;
-      height:auto;
-      display:block;
-      margin:0 auto 18px;
+    .save-logo{display:none}
+    .save-brand{
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.14em;
+      color:#94a3b8;
+      margin:0 0 18px;
     }
+    /* macOS 스타일 스피너 — 끝으로 갈수록 옅어지는 링이 매끄럽게 회전 */
     .save-spinner{
-      width:86px;
-      height:86px;
+      width:44px;
+      height:44px;
       margin:0 auto 20px;
       border-radius:50%;
-      border:9px solid #dbeafe;
-      border-top-color:#0b5dbb;
-      animation:fitiSpin .9s linear infinite;
-      position:relative;
+      background:conic-gradient(from 0deg, rgba(100,116,139,0) 0%, rgba(71,85,105,.85) 100%);
+      -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4.5px));
+      mask:radial-gradient(farthest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4.5px));
+      animation:fitiSpin .8s linear infinite;
     }
     .save-spinner::after{
       content:'';
@@ -1056,6 +1059,32 @@ padding-left:6px!important;
   }
 }
 
+  /* v29: 로그인 비밀번호 */
+  .login-error{color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:8px 10px;font-size:12.5px;font-weight:800;margin:2px 0 0}
+
+  /* v28: 월말 정산 리포트 */
+  .report-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .report-controls select{font-size:12px;font-weight:800;border:1px solid #dbe5f2;border-radius:9px;padding:5px 9px;color:#334155;background:#f8fafc;cursor:pointer;min-width:110px}
+  .report-group{border:1px solid #e2e8f0;border-radius:16px;padding:14px;margin-bottom:14px;background:#fff}
+  .report-group.bs{border-color:#bae6fd;background:linear-gradient(180deg,#f0f9ff 0%,#ffffff 60%)}
+  .report-group.flower{border-color:#fbcfe8;background:linear-gradient(180deg,#fdf2f8 0%,#ffffff 60%)}
+  .report-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .report-name{font-size:15px;font-weight:950;color:#0f172a}
+  .report-sum{font-size:13px;font-weight:900;color:#334155}
+  .report-sum b{font-size:17px;color:#0f172a;margin:0 2px}
+  .report-tally{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .report-chip{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;color:#334155}
+  .report-panel table{font-size:12.5px}
+  .report-panel th,.report-panel td{padding:8px 10px}
+  .report-empty{padding:22px;text-align:center;color:#94a3b8;font-size:13px}
+  .report-total-row td{background:#f8fafc!important;font-weight:950}
+  @media print{
+    .nav,.hero-toolbar,.kpis,.charts,#chart-dots,#mobile-filter-toggle,.detail-sidebar,
+    .report-controls,#log-body,.log-table-wrap,.mobile-log-list{display:none!important}
+    .report-panel{box-shadow:none;border:0}
+    body{background:#fff}
+  }
+
   /* v27: 목록에 문서번호 / 부고안내·청첩장 열 추가 */
   .notice-link{color:#1d4ed8;text-decoration:underline;word-break:break-all}
   .notice-link:hover{color:#1e40af}
@@ -1070,7 +1099,9 @@ padding-left:6px!important;
       <h1>전략구매팀<br>화환 배송 관리 대시보드</h1>
       <p class="desc">로그인 후 <b>화환배송관리.xlsx</b> 파일을 불러와 배송상태, 담당자, 관리메모를 수정하고 다시 엑셀 파일로 저장합니다. 누가 무엇을 수정했는지는 변경 이력에 기록됩니다.</p>
      <form id="login-form" class="form">
-  <div><label>사번 또는 이름</label><input id="login-id" required placeholder="예: 홍길동 또는 2026001"></div>
+  <div><label>아이디</label><input id="login-id" required autocomplete="username" placeholder="예: 관리자"></div>
+  <div><label>비밀번호</label><input id="login-pw" type="password" required autocomplete="current-password" placeholder="비밀번호"></div>
+  <p id="login-error" class="login-error hidden">아이디 또는 비밀번호가 올바르지 않습니다.</p>
   <button class="btn" type="submit">로그인</button>
 </form>
     </div>
@@ -1276,6 +1307,24 @@ padding-left:6px!important;
       </section>
 
 
+      <section class="panel report-panel" id="report-panel" style="margin-top:16px">
+        <h2 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          월말 정산 리포트
+          <span class="report-controls">
+            <button id="report-prev" class="btn ghost small" type="button">◀ 이전달</button>
+            <select id="report-month"></select>
+            <button id="report-next" class="btn ghost small" type="button">다음달 ▶</button>
+            <button id="report-export" class="btn small" type="button">엑셀 내보내기</button>
+            <button id="report-print" class="btn ghost small" type="button">인쇄</button>
+          </span>
+        </h2>
+        <p class="hint" style="margin-bottom:12px">
+          품목명에 <b>BS</b>가 들어가면 <b>비에스</b>, 그 외는 <b>꽃과향기</b>로 자동 구분합니다.
+          비에스는 계산서 대조용, 꽃과향기는 실적 확인용입니다.
+        </p>
+        <div id="report-body"></div>
+      </section>
+
       <section class="panel" style="margin-top:16px">
         <h2>변경 이력</h2>
         <p class="hint" style="margin-bottom:10px">상태/담당자/메모 변경과 신규 등록, 엑셀 재업로드 시 삭제 감지 내역만 기록됩니다. 조회, 검색, 필터 변경은 이력에 남기지 않습니다.</p>
@@ -1425,6 +1474,7 @@ padding-left:6px!important;
 <div id="save-overlay" class="save-overlay" aria-live="polite" aria-busy="true">
   <div class="save-box">
     <img class="save-logo" src="data:image/png;base64,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" alt="FITI">
+    <div class="save-brand">전략구매팀</div>
     <div class="save-spinner"></div>
     <div class="save-check">✓</div>
     <div id="save-overlay-title" class="save-title">저장 중...</div>
@@ -1522,6 +1572,7 @@ let state = {
   serverSaveVersion:'',
   loadedServerSaveVersion:'',
   saveBaseVersion:'',
+  saveAs:'',
   dirty:false
 };
 let currentDetailId = null;
@@ -1535,6 +1586,23 @@ const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const LOGIN_STORAGE_KEY = 'flowerDeliveryLoginUser';
 const ADMIN_USER_NAME = '전략구매팀';
+
+/* 로그인 계정.
+   id      : 로그인 창에 입력하는 아이디
+   pw      : 비밀번호
+   role    : 'manager' 면 엑셀 불러오기 등 관리 기능 표시
+   saveAs  : 서버 저장 시 보낼 이름. 서버(api/deliveries.js)가 '전략구매팀'만 저장을 허용한다.
+   계정을 늘리려면 아래 배열에 한 줄 추가하면 된다. */
+const ACCOUNTS = [
+  { id:'관리자',     pw:'8124', role:'manager', saveAs: ADMIN_USER_NAME },
+  { id:'전략구매팀', pw:'8124', role:'manager', saveAs: ADMIN_USER_NAME }
+];
+
+function findAccount(id, pw){
+  const uid = String(id || '').trim();
+  const upw = String(pw || '');
+  return ACCOUNTS.find(a => a.id === uid && a.pw === upw) || null;
+}
 const MAX_LOGS = 30;
 const LOG_DISPLAY_LIMIT = 5;
 const SAVE_PRECHECK_DELAY_MS = 3200;
@@ -1646,7 +1714,8 @@ function saveLoginSession(){
   try{
     localStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify({
       user: state.user,
-      role: state.role
+      role: state.role,
+      saveAs: state.saveAs || state.user
     }));
   }catch(err){
     console.warn('로그인 정보 저장에 실패했습니다.', err);
@@ -1731,7 +1800,7 @@ async function saveToServer(){
 
    console.log('[POST 직전]', {
     user: state.user,
-    lastSavedBy: state.user || '',
+    lastSavedBy: state.saveAs || state.user || '',
     expectedSaveVersion,
     loadedServerSaveVersion: state.loadedServerSaveVersion,
     loadedServerSavedAt: state.loadedServerSavedAt,
@@ -1743,7 +1812,7 @@ async function saveToServer(){
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({
   data: state.data,
-  lastSavedBy: state.user || '',
+  lastSavedBy: state.saveAs || state.user || '',
   expectedSaveVersion
 })
   });
@@ -1868,7 +1937,8 @@ async function saveLogsToServer(){
   const res = await fetch('/api/logs', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ data: state.logs })
+    // 서버(api/logs.js)가 user 값으로 관리자 여부를 확인하므로 반드시 함께 보낸다.
+    body: JSON.stringify({ data: state.logs, user: state.saveAs || state.user || '' })
   });
   const result = await res.json();
 
@@ -1953,8 +2023,18 @@ async function restoreLoginSession(){
       return false;
     }
 
-  state.user = String(userInfo.user || '').trim();
-  state.role = state.user === ADMIN_USER_NAME ? 'manager' : 'user';
+  // 저장된 세션도 현재 계정 목록에 있는 아이디만 인정한다.
+  // (계정을 지우거나 비밀번호를 바꾸면 기존 로그인도 풀린다)
+  const acc = ACCOUNTS.find(a => a.id === String(userInfo.user || '').trim());
+  if(!acc){
+    clearLoginSession();
+    document.documentElement.classList.remove('auto-login-pending');
+    return false;
+  }
+
+  state.user = acc.id;
+  state.role = acc.role;
+  state.saveAs = acc.saveAs || acc.id;
 
 applyLoginView();
 applyRoleVisibility();
@@ -2714,6 +2794,158 @@ $('#tbody').innerHTML=data.map(r=>{
   $$('.notice-link').forEach(a=>a.addEventListener('click', e=>e.stopPropagation()));
   $$('.data-row').forEach(tr=>tr.addEventListener('click',()=>openDetail(Number(tr.dataset.id))));
 }
+/* ====================== 월말 정산 리포트 ======================
+   품목명에 BS가 들어가면 비에스, 나머지는 꽃과향기로 자동 구분한다.
+   (BS 양식 기능이 생기기 전에 등록된 건은 formType이 비어 있어서 품목명으로 판별한다) */
+const REPORT_VENDORS = [
+  { key:'bs',     name:'비에스',   cls:'bs',     desc:'계산서 대조용' },
+  { key:'flower', name:'꽃과향기', cls:'flower', desc:'실적 확인용' }
+];
+
+function reportVendorOf(r){
+  return /BS/i.test(String(r.item || '')) || r.formType === 'bs' ? 'bs' : 'flower';
+}
+
+function reportMonths(){
+  const set = new Set();
+  state.data.forEach(r => {
+    const m = String(r.date || '').trim().slice(0, 7);
+    if(/^\d{4}-\d{2}$/.test(m)) set.add(m);
+  });
+  return Array.from(set).sort().reverse();
+}
+
+let reportMonth = '';
+
+function fillReportMonths(){
+  const sel = $('#report-month');
+  if(!sel) return;
+  const months = reportMonths();
+  if(!months.length){ sel.innerHTML = '<option value="">데이터 없음</option>'; reportMonth=''; return; }
+  if(!months.includes(reportMonth)) reportMonth = months[0];
+  sel.innerHTML = months.map(m => `<option value="${m}" ${m===reportMonth?'selected':''}>${m}</option>`).join('');
+}
+
+function reportRows(month){
+  return state.data
+    .filter(r => String(r.date || '').slice(0, 7) === month)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+
+function renderReport(){
+  const box = $('#report-body');
+  if(!box) return;
+  fillReportMonths();
+
+  if(!reportMonth){
+    box.innerHTML = '<div class="report-empty">데이터가 없습니다. 먼저 배송현황을 불러와주세요.</div>';
+    return;
+  }
+
+  const rows = reportRows(reportMonth);
+  if(!rows.length){
+    box.innerHTML = `<div class="report-empty">${escapeHtml(reportMonth)} 에 등록된 건이 없습니다.</div>`;
+    return;
+  }
+
+  box.innerHTML = REPORT_VENDORS.map(v => {
+    const list = rows.filter(r => reportVendorOf(r) === v.key);
+    const sum = list.reduce((a, r) => a + num(r.price), 0);
+
+    // 품목별 소계 — 계산서에 적힌 품목·수량과 맞춰보기 위한 것
+    const byItem = {};
+    list.forEach(r => {
+      const k = r.item || '(품목없음)';
+      if(!byItem[k]) byItem[k] = { n:0, amt:0 };
+      byItem[k].n++; byItem[k].amt += num(r.price);
+    });
+    const chips = Object.keys(byItem).sort().map(k =>
+      `<span class="report-chip">${escapeHtml(k)} ${byItem[k].n}건 · ${money(byItem[k].amt)}원</span>`).join('');
+
+    const body = list.length ? list.map(r => `
+      <tr>
+        <td>${escapeHtml(r.date || '')}</td>
+        <td>${escapeHtml(r.docNo || '')}</td>
+        <td><div class="clip">${escapeHtml(r.client || r.reason || '')}</div></td>
+        <td>${escapeHtml(r.item || '')}</td>
+        <td>${v.key === 'bs' ? escapeHtml(r.bsQty || '') : ''}</td>
+        <td class="price">${money(r.price)}</td>
+        <td><div class="clip">${escapeHtml((r.recipient || '').split('\n')[0])}</div></td>
+        <td>${statusBadge(r.status)}</td>
+      </tr>`).join('')
+      : `<tr><td colspan="8" class="report-empty">해당 건이 없습니다.</td></tr>`;
+
+    const totalRow = list.length ? `
+      <tr class="report-total-row">
+        <td colspan="5">합계</td>
+        <td class="price">${money(sum)}</td>
+        <td colspan="2">${list.length}건</td>
+      </tr>` : '';
+
+    return `
+      <div class="report-group ${v.cls}">
+        <div class="report-head">
+          <div class="report-name">${escapeHtml(v.name)} <span class="hint" style="font-weight:700">${escapeHtml(v.desc)}</span></div>
+          <div class="report-sum">건수 <b>${list.length}</b>건 · 합계 <b>${money(sum)}</b>원</div>
+        </div>
+        <div class="report-tally">${chips || '<span class="report-chip">내역 없음</span>'}</div>
+        <div class="table-wrap" style="box-shadow:none">
+          <table>
+            <thead><tr>
+              <th>신청일</th><th>문서번호</th><th>거래처/사유</th><th>품목</th>
+              <th>수량</th><th>단가</th><th>수신처</th><th>상태</th>
+            </tr></thead>
+            <tbody>${body}${totalRow}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function buildReportRows(month){
+  const rows = reportRows(month);
+  const out = [[`${month} 월말 정산 리포트`], []];
+
+  REPORT_VENDORS.forEach(v => {
+    const list = rows.filter(r => reportVendorOf(r) === v.key);
+    const sum = list.reduce((a, r) => a + num(r.price), 0);
+
+    out.push([`${v.name} (${v.desc})`, `${list.length}건`, `${sum}원`]);
+    out.push(['신청일','문서번호','거래처/사유','품목','수량','단가','수신처','상태']);
+
+    list.forEach(r => out.push([
+      r.date || '', r.docNo || '', r.client || r.reason || '', r.item || '',
+      v.key === 'bs' ? (r.bsQty || '') : '',
+      num(r.price), (r.recipient || '').split('\n')[0], statusLabel(r.status)
+    ]));
+
+    out.push(['합계','','','','', sum, `${list.length}건`, '']);
+    out.push([]);
+  });
+
+  return out;
+}
+
+function exportReportXlsx(){
+  if(!reportMonth) return alert('내보낼 월이 없습니다.');
+  const rows = reportRows(reportMonth);
+  if(!rows.length) return alert(`${reportMonth} 에 등록된 건이 없습니다.`);
+
+  saveWorkbookOffline(`화환_월말리포트_${reportMonth}.xlsx`, [
+    { name:'월말리포트', rows: buildReportRows(reportMonth) }
+  ]);
+}
+
+function stepReportMonth(dir){
+  const months = reportMonths();          // 최신 → 과거 순
+  const i = months.indexOf(reportMonth);
+  if(i < 0) return;
+  const next = months[i + (dir < 0 ? 1 : -1)];   // 이전달 = 배열에서 뒤쪽
+  if(!next) return;
+  reportMonth = next;
+  renderReport();
+}
+
 function renderLogs(){
   const logs = state.logs.slice(0,LOG_DISPLAY_LIMIT);
 
@@ -2742,7 +2974,7 @@ function renderLogs(){
       : '<div class="mobile-log-empty">아직 변경 이력이 없습니다.</div>';
   }
 }
-function renderAll(rebuildFilters=true){ if(rebuildFilters) fillFilters(); renderSummary(); renderTable(); renderLogs(); $('#source-info').textContent = `현재 불러온 파일: ${state.sourceFile || '없음'}${lastSavedText()}`;}
+function renderAll(rebuildFilters=true){ if(rebuildFilters) fillFilters(); renderSummary(); renderTable(); renderLogs(); renderReport(); $('#source-info').textContent = `현재 불러온 파일: ${state.sourceFile || '없음'}${lastSavedText()}`;}
 // ============================== 상세 사이드바 ==============================
 function openDetail(id){
   const r=state.data.find(x=>x.id===id); if(!r) return; currentDetailId=id;
@@ -3362,6 +3594,11 @@ $('#add-bs-mode')?.addEventListener('click',()=>{
   setAddFormMode('bs');
   syncBsItemSelection('#a-item-preset', '#a-item', '#a-price');
 });
+$('#report-month')?.addEventListener('change', e => { reportMonth = e.target.value; renderReport(); });
+$('#report-prev')?.addEventListener('click', () => stepReportMonth(-1));
+$('#report-next')?.addEventListener('click', () => stepReportMonth(1));
+$('#report-export')?.addEventListener('click', exportReportXlsx);
+$('#report-print')?.addEventListener('click', () => window.print());
 $('#detail-normal-mode')?.addEventListener('click',()=>setDetailFormMode('normal'));
 $('#detail-bs-mode')?.addEventListener('click',()=>{
   setDetailFormMode('bs');
@@ -3369,8 +3606,22 @@ $('#detail-bs-mode')?.addEventListener('click',()=>{
 });
 $('#login-form').addEventListener('submit', async e=>{
   e.preventDefault();
-  state.user = $('#login-id').value.trim();
-  state.role = state.user === ADMIN_USER_NAME ? 'manager' : 'user';
+
+  const acc = findAccount($('#login-id').value, $('#login-pw').value);
+  const errBox = $('#login-error');
+
+  if(!acc){
+    errBox?.classList.remove('hidden');
+    $('#login-pw').value = '';
+    $('#login-pw').focus();
+    return;
+  }
+  errBox?.classList.add('hidden');
+  $('#login-pw').value = '';
+
+  state.user = acc.id;
+  state.role = acc.role;
+  state.saveAs = acc.saveAs || acc.id;
   saveLoginSession();
   applyLoginView();
   applyRoleVisibility();
