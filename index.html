@@ -1108,6 +1108,23 @@ padding-left:6px!important;
   max-height:calc(100vh - 108px);
 }
 
+/* v32-3: 2단 배치에서 목록과 상세 패널 높이를 강제로 동일하게
+   (align-items:stretch 면 그리드가 두 칸을 같은 높이로 늘려 줍니다) */
+@media(min-width:1301px){
+  .workspace{ align-items:stretch!important; }
+  .table-area,
+  .detail-sidebar{
+    position:sticky!important;
+    top:86px!important;
+    height:calc(100vh - 108px)!important;
+    max-height:calc(100vh - 108px)!important;
+    align-self:start!important;
+  }
+  .detail-sidebar{ overflow-y:auto!important; }
+  .table-area{ display:flex!important; flex-direction:column!important; min-height:0!important; }
+  .table-area .table-wrap{ flex:1 1 auto!important; max-height:none!important; min-height:0!important; }
+}
+
 /* 1단 배치로 바뀌는 구간에서는 높이 고정 해제 */
 @media(max-width:1300px){
   .table-area{
@@ -1125,6 +1142,48 @@ padding-left:6px!important;
     max-height:none!important;
   }
 }
+
+/* =====================================================================
+   v32-4: 배송현황 목록 셀 가독성 정리
+   - 긴 URL 이 날것으로 줄바꿈되며 행 높이를 밀어내던 문제
+   - 배송장소/수신자 여러 줄 텍스트의 줄간격·여백 정리
+   ===================================================================== */
+.table-area td .clip{
+  line-height:1.6;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  white-space:pre-line;
+  max-height:132px;
+  overflow:hidden;
+  position:relative;
+}
+/* 내용이 잘리면 아래쪽을 흐리게 처리해 더 있다는 걸 알립니다 */
+.table-area td .clip.is-clipped::after{
+  content:"";
+  position:absolute; left:0; right:0; bottom:0; height:26px;
+  background:linear-gradient(180deg, rgba(255,255,255,0), #fff 85%);
+  pointer-events:none;
+}
+.table-area tbody tr:hover td .clip.is-clipped::after{
+  background:linear-gradient(180deg, rgba(241,245,255,0), #f1f5ff 85%);
+}
+
+/* 셀 안의 링크를 한 줄짜리 칩으로 */
+.cell-link{
+  display:inline-flex; align-items:center; gap:5px;
+  max-width:100%; margin:2px 4px 2px 0; padding:3px 9px;
+  background:#eef4ff; border:1px solid #c7d7f5; border-radius:999px;
+  color:#1d4ed8; font-size:11.5px; font-weight:900;
+  text-decoration:none; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; vertical-align:1px;
+  transition:background .15s, border-color .15s;
+}
+.cell-link:hover{ background:#dbe7ff; border-color:#93b4f0; }
+.cell-link svg{ width:11px; height:11px; flex:none; }
+
+/* 전화번호 · 날짜 강조 */
+.cell-tel{ font-variant-numeric:tabular-nums; font-weight:800; color:#0f172a; }
+.cell-em{ font-weight:900; color:#b45309; }
 
 /* =====================================================================
    v32-2: 경조사 지침 팝업 (휴가·휴직 업무처리지침 <별표 2>)
@@ -2047,13 +2106,15 @@ const KAKAO_JS_KEY = 'dc0db1104b718d0c877a647e543e5d93';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const LOGIN_STORAGE_KEY = 'flowerDeliveryLoginUser';
-const ADMIN_USER_NAME = '전략구매팀';
+const ADMIN_USER_NAMES = ['전략구매팀', '관리자'];
+const ADMIN_USER_NAME = ADMIN_USER_NAMES[0];
+function isAdminName(n){ return ADMIN_USER_NAMES.includes(String(n || '').trim()); }
 
 // 수정 권한: 관리자(전략구매팀)로 로그인한 경우에만 true 입니다.
 function canEdit(){ return state.role === 'manager'; }
 function requireEdit(){
   if(canEdit()) return true;
-  alert('조회 전용 계정입니다.\n\n배송현황 수정/저장/삭제는 관리자(' + ADMIN_USER_NAME + ') 계정으로 로그인해야 가능합니다.');
+  alert('조회 전용 계정입니다.\n\n배송현황 수정/저장/삭제는 관리자(' + ADMIN_USER_NAMES.join(' 또는 ') + ') 계정으로 로그인해야 가능합니다.');
   return false;
 }
 const MAX_LOGS = 30;
@@ -2478,7 +2539,7 @@ async function restoreLoginSession(){
     }
 
   state.user = String(userInfo.user || '').trim();
-  state.role = state.user === ADMIN_USER_NAME ? 'manager' : 'user';
+  state.role = isAdminName(state.user) ? 'manager' : 'user';
 
 applyLoginView();
 applyRoleVisibility();
@@ -2546,12 +2607,12 @@ function lastSavedText(){
 
   if(!at && !by) return '';
 
+  // 누가 저장했는지가 기록의 핵심이므로 이름을 항상 그대로 보여 줍니다.
+  // 본인이 저장한 건은 뒤에 '(본인)' 만 덧붙입니다.
   let who = by || '저장자 미확인';
 
-  if(state.user && by && by === state.user){
-    who = '내가 저장함';
-  }else if(by){
-    who = `${by} 님`;
+  if(by){
+    who = (state.user && by === state.user) ? `${by} 님 (본인)` : `${by} 님`;
   }
 
   if(at){
@@ -3803,7 +3864,7 @@ $('#add-bs-mode')?.addEventListener('click',()=>setAddFormMode('bs'));
 $('#login-form').addEventListener('submit', async e=>{
   e.preventDefault();
   state.user = $('#login-id').value.trim();
-  state.role = state.user === ADMIN_USER_NAME ? 'manager' : 'user';
+  state.role = isAdminName(state.user) ? 'manager' : 'user';
   saveLoginSession();
   applyLoginView();
   applyRoleVisibility();
