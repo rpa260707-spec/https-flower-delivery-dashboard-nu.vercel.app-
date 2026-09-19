@@ -1,4 +1,22 @@
 import { put, list, get } from '@vercel/blob';
+/* Vercel Blob 자격 찾기
+   Storage 를 연결할 때 접두사가 붙으면(`housing_STORE_ID`, `procurement_STORE_ID` …)
+   기본 이름(BLOB_READ_WRITE_TOKEN)이 없어서 SDK 가 엉뚱한 자격으로 붙고 403 이 납니다.
+   그래서 기본 이름 → 접두사가 뭐든 끝이 맞는 이름 순으로 찾아 명시적으로 넘깁니다. */
+const BLOB_OPT = (() => {
+  const pick = (suffix) => {
+    if (process.env['BLOB' + suffix]) return process.env['BLOB' + suffix];
+    const key = Object.keys(process.env).find((n) => n.endsWith(suffix) && process.env[n]);
+    return key ? process.env[key] : undefined;
+  };
+  const token = pick('_READ_WRITE_TOKEN');
+  const storeId = pick('_STORE_ID');
+  const o = {};
+  if (token) o.token = token;
+  else if (storeId) o.storeId = storeId;
+  return o;
+})();
+
 
 const FILE_NAME = 'logs.json';
 
@@ -74,6 +92,7 @@ export default async function handler(req, res) {
 
       await put(FILE_NAME, JSON.stringify(data.slice(0, 30), null, 2), {
         access: 'private',
+        ...BLOB_OPT,
         contentType: 'application/json',
         allowOverwrite: true
       });
