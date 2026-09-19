@@ -12,6 +12,9 @@ function setNoStoreHeaders(res) {
   res.setHeader('Surrogate-Control', 'no-store');
 }
 
+// 이 엔드포인트는 고인 성함·상주 연락처·빈소 등 개인정보를 그대로 담고 있으므로
+// 외부 출처(CORS)를 열지 않습니다. 포털 위젯은 집계만 내보내는 /api/summary 를 씁니다.
+
 async function streamToText(stream) {
   const reader = stream.getReader();
   const decoder = new TextDecoder();

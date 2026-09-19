@@ -315,6 +315,21 @@
     body.role-manager .excel-admin-only{display:grid!important}
     @media(max-width:1300px){body.role-manager .excel-admin-only{display:grid!important}}
 
+    /* 조회 전용(일반 사용자) 모드: 관리자(전략구매팀)만 수정 가능 */
+    body.role-viewer .edit-only,
+    body.role-viewer #add-delivery,
+    body.role-viewer #export-data,
+    body.role-viewer #load-file,
+    body.role-viewer #clear-session{display:none!important}
+    body.role-viewer #sidebar-content input,
+    body.role-viewer #sidebar-content select,
+    body.role-viewer #sidebar-content textarea{background:#f1f5f9;color:#64748b;cursor:not-allowed}
+    body.role-viewer .row-status,
+    body.role-viewer .mobile-card-select{background:#f1f5f9;color:#475569;cursor:not-allowed}
+    .pill.viewer{background:#fee2e2;color:#b91c1c}
+    .readonly-notice{display:none}
+    body.role-viewer .readonly-notice{display:inline-flex;align-items:center;gap:6px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:900}
+
     /* ============================================================
        모바일 전용 스타일 (700px 이하) — 웹 UI 완전 별개
        ============================================================ */
@@ -795,24 +810,21 @@
       padding:34px 30px 28px;
       text-align:center;
     }
-    .save-logo{display:none}
-    .save-brand{
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:.14em;
-      color:#94a3b8;
-      margin:0 0 18px;
+    .save-logo{
+      width:120px;
+      height:auto;
+      display:block;
+      margin:0 auto 18px;
     }
-    /* macOS 스타일 스피너 — 끝으로 갈수록 옅어지는 링이 매끄럽게 회전 */
     .save-spinner{
-      width:44px;
-      height:44px;
+      width:86px;
+      height:86px;
       margin:0 auto 20px;
       border-radius:50%;
-      background:conic-gradient(from 0deg, rgba(100,116,139,0) 0%, rgba(71,85,105,.85) 100%);
-      -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4.5px));
-      mask:radial-gradient(farthest-side, transparent calc(100% - 4.5px), #000 calc(100% - 4.5px));
-      animation:fitiSpin .8s linear infinite;
+      border:9px solid #dbeafe;
+      border-top-color:#0b5dbb;
+      animation:fitiSpin .9s linear infinite;
+      position:relative;
     }
     .save-spinner::after{
       content:'';
@@ -1059,37 +1071,215 @@ padding-left:6px!important;
   }
 }
 
-  /* v29: 로그인 비밀번호 */
-  .login-error{color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:8px 10px;font-size:12.5px;font-weight:800;margin:2px 0 0}
+/* =====================================================================
+   v32-1: 배송현황 목록 캔버스 높이를 오른쪽 상세 패널과 동일하게 맞춤
+   - 기존 .table-wrap{max-height:620px} 때문에 왼쪽만 짧게 잘렸음
+   - 상세 패널과 같은 sticky / 같은 높이로 맞춰 하나의 프레임처럼 보이게 함
+   ===================================================================== */
+.workspace{
+  align-items:start;
+}
 
-  /* v28: 월말 정산 리포트 */
-  .report-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  .report-controls select{font-size:12px;font-weight:800;border:1px solid #dbe5f2;border-radius:9px;padding:5px 9px;color:#334155;background:#f8fafc;cursor:pointer;min-width:110px}
-  .report-group{border:1px solid #e2e8f0;border-radius:16px;padding:14px;margin-bottom:14px;background:#fff}
-  .report-group.bs{border-color:#bae6fd;background:linear-gradient(180deg,#f0f9ff 0%,#ffffff 60%)}
-  .report-group.flower{border-color:#fbcfe8;background:linear-gradient(180deg,#fdf2f8 0%,#ffffff 60%)}
-  .report-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px}
-  .report-name{font-size:15px;font-weight:950;color:#0f172a}
-  .report-sum{font-size:13px;font-weight:900;color:#334155}
-  .report-sum b{font-size:17px;color:#0f172a;margin:0 2px}
-  .report-tally{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-  .report-chip{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;color:#334155}
-  .report-panel table{font-size:12.5px}
-  .report-panel th,.report-panel td{padding:8px 10px}
-  .report-empty{padding:22px;text-align:center;color:#94a3b8;font-size:13px}
-  .report-total-row td{background:#f8fafc!important;font-weight:950}
-  @media print{
-    .nav,.hero-toolbar,.kpis,.charts,#chart-dots,#mobile-filter-toggle,.detail-sidebar,
-    .report-controls,#log-body,.log-table-wrap,.mobile-log-list{display:none!important}
-    .report-panel{box-shadow:none;border:0}
-    body{background:#fff}
+.table-area{
+  position:sticky;
+  top:86px;                              /* .detail-sidebar 와 동일 */
+  height:calc(100vh - 108px);            /* .detail-sidebar 와 동일 */
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:0;
+}
+
+/* .table-area::before 는 '배송현황 목록' 제목 — flex 아이템으로 자리 차지 */
+.table-area::before{
+  flex:0 0 auto;
+}
+
+.table-area .table-wrap{
+  flex:1 1 auto;
+  max-height:none!important;             /* v25 의 620px 고정 해제 */
+  min-height:0;
+  overflow-y:auto!important;
+  overflow-x:auto!important;
+}
+
+.detail-sidebar{
+  height:auto;
+  max-height:calc(100vh - 108px);
+}
+
+/* 1단 배치로 바뀌는 구간에서는 높이 고정 해제 */
+@media(max-width:1300px){
+  .table-area{
+    position:relative;
+    top:auto;
+    height:auto;
+    max-height:none;
   }
+  .table-area .table-wrap{
+    max-height:70vh!important;
+  }
+}
+@media(max-width:700px){
+  .table-area .table-wrap{
+    max-height:none!important;
+  }
+}
 
-  /* v27: 목록에 문서번호 / 부고안내·청첩장 열 추가 */
-  .notice-link{color:#1d4ed8;text-decoration:underline;word-break:break-all}
-  .notice-link:hover{color:#1e40af}
-  #tbody td:nth-child(8) .clip{max-width:220px;word-break:break-all}
-  #tbody td:nth-child(3) .clip{max-width:130px;white-space:normal}
+/* =====================================================================
+   v32-2: 경조사 지침 팝업 (휴가·휴직 업무처리지침 <별표 2>)
+   ===================================================================== */
+#guide-modal .modal{
+  width:min(1180px,96vw);
+  padding:20px;
+}
+.guide-tabs{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  border-bottom:2px solid #e2e8f0;
+  margin-bottom:16px;
+}
+.guide-tab{
+  border:0;
+  background:transparent;
+  color:#94a3b8;
+  font-size:13.5px;
+  font-weight:950;
+  padding:10px 14px;
+  cursor:pointer;
+  border-bottom:3px solid transparent;
+  margin-bottom:-2px;
+  border-radius:10px 10px 0 0;
+  transition:color .15s,border-color .15s,background .15s;
+  font-family:inherit;
+}
+.guide-tab:hover{ background:#f1f5f9; color:#475569; }
+.guide-tab.active{ color:#0f172a; border-bottom-color:#2563eb; }
+.guide-view{ display:none; }
+.guide-view.active{ display:block; }
+
+.guide-scroll{
+  max-height:min(62vh,620px);
+  overflow:auto;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+}
+.guide-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:13px;
+  white-space:nowrap;
+}
+.guide-table th,
+.guide-table td{
+  border-bottom:1px solid #e9eef5;
+  border-right:1px solid #e9eef5;
+  padding:8px 10px;
+  text-align:center;
+  vertical-align:middle;
+}
+.guide-table thead th{
+  position:sticky;
+  top:0;
+  z-index:3;
+  background:#f1f5f9;
+  color:#0f172a;
+  font-weight:950;
+  font-size:12.5px;
+}
+.guide-table thead tr:nth-child(2) th{ top:35px; }
+.guide-table thead th.grp-hr{ background:#eef2ff; color:#4338ca; }
+.guide-table thead th.grp-sp{ background:#e0f2fe; color:#0369a1; }
+.guide-table thead th.grp-fi{ background:#ecfdf5; color:#047857; }
+.guide-table thead th.grp-pr{ background:#fef3c7; color:#92400e; }
+.guide-table td.col-target{
+  text-align:left;
+  white-space:normal;
+  min-width:210px;
+  font-weight:800;
+  color:#1e293b;
+}
+.guide-table td.col-cat{
+  background:#f8fafc;
+  font-weight:950;
+  color:#0f172a;
+  font-size:13.5px;
+  white-space:nowrap;
+}
+.guide-table tbody tr:hover td{ background:#f8fbff; }
+.guide-table tbody tr:hover td.col-cat{ background:#eef4ff; }
+.guide-table .yes{ color:#0ea5e9; font-weight:950; font-size:15px; }
+.guide-table .no{ color:#cbd5e1; }
+.guide-table .num{ font-variant-numeric:tabular-nums; font-weight:900; color:#0f172a; }
+.guide-table .flowercol{ background:#f0f9ff; }
+.guide-table tbody tr:hover .flowercol{ background:#e0f2fe; }
+
+.guide-note{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:12px;
+  font-size:13px;
+  line-height:1.75;
+  color:#334155;
+}
+.guide-note h4{
+  font-size:13.5px;
+  font-weight:950;
+  color:#0f172a;
+  margin:0 0 8px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.guide-note ul{ margin:0; padding-left:18px; }
+.guide-note li{ margin:3px 0; }
+.guide-note .sub{ color:#64748b; font-size:12.5px; }
+.guide-note.accent{ background:#f0f9ff; border-color:#bae6fd; }
+.guide-note.accent h4{ color:#0369a1; }
+.guide-note.warn{ background:#fffbeb; border-color:#fde68a; }
+.guide-note.warn h4{ color:#92400e; }
+
+.guide-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background:#0ea5e9;
+  color:#fff;
+  border-radius:999px;
+  padding:3px 10px;
+  font-size:11.5px;
+  font-weight:950;
+}
+.guide-chip.gray{ background:#64748b; }
+.guide-legend{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  font-size:12px;
+  color:#64748b;
+  font-weight:800;
+  margin:10px 2px 0;
+}
+
+#open-guide{
+  background:#eef2ff!important;
+  border:1px solid #c7d2fe!important;
+  color:#4338ca!important;
+}
+#open-guide:hover{ background:#e0e7ff!important; }
+
+@media(max-width:700px){
+  #guide-modal .modal{ padding:14px!important; }
+  .guide-tab{ font-size:12px; padding:9px 10px; }
+  .guide-scroll{ max-height:64vh; }
+  .guide-table{ font-size:12px; }
+  .guide-table th,.guide-table td{ padding:6px 7px; }
+  .guide-table td.col-target{ min-width:160px; }
+}
   </style>
 </head>
 <body>
@@ -1099,9 +1289,7 @@ padding-left:6px!important;
       <h1>전략구매팀<br>화환 배송 관리 대시보드</h1>
       <p class="desc">로그인 후 <b>화환배송관리.xlsx</b> 파일을 불러와 배송상태, 담당자, 관리메모를 수정하고 다시 엑셀 파일로 저장합니다. 누가 무엇을 수정했는지는 변경 이력에 기록됩니다.</p>
      <form id="login-form" class="form">
-  <div><label>아이디</label><input id="login-id" required autocomplete="username" placeholder="예: 관리자"></div>
-  <div><label>비밀번호</label><input id="login-pw" type="password" required autocomplete="current-password" placeholder="비밀번호"></div>
-  <p id="login-error" class="login-error hidden">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+  <div><label>사번 또는 이름</label><input id="login-id" required placeholder="예: 홍길동 또는 2026001"></div>
   <button class="btn" type="submit">로그인</button>
 </form>
     </div>
@@ -1110,7 +1298,7 @@ padding-left:6px!important;
   <section id="app" class="app hidden">
     <nav class="nav">
       <div class="brand">화환 배송 관리 현황</div>
-      <div class="user"><span id="user-label"></span><span id="role-label" class="pill"></span><button id="clear-session" class="btn ghost small">전체 초기화</button><button id="logout" class="btn ghost small">로그아웃</button></div>
+      <div class="user"><span id="user-label"></span><span id="role-label" class="pill"></span><button id="open-guide" class="btn ghost small" type="button" title="휴가·휴직 업무처리지침 &lt;별표 2&gt; 직원 경조사 행정처리 안내표">📋 경조사 지침</button><button id="clear-session" class="btn ghost small edit-only">전체 초기화</button><button id="logout" class="btn ghost small">로그아웃</button></div>
     </nav>
     <main>
       <section class="hero-toolbar">
@@ -1124,8 +1312,9 @@ padding-left:6px!important;
             <input id="data-file" type="file" accept=".xlsx,.xls,.csv,text/csv">
             <button id="load-file" class="btn ghost">엑셀 불러오기</button>
           </div>
-          <button id="add-delivery" class="btn success">신규 등록</button>
-          <button id="export-data" class="btn">현황 저장</button>
+          <button id="add-delivery" class="btn success edit-only">신규 등록</button>
+          <button id="export-data" class="btn edit-only">현황 저장</button>
+          <span class="readonly-notice">조회 전용 계정입니다 (수정 불가)</span>
           <button id="export-log" class="btn ghost">변경이력 다운로드</button>
           <button id="refresh-data" class="btn ghost small">서버 새로고침</button>
         </div>
@@ -1187,7 +1376,7 @@ padding-left:6px!important;
         <div class="table-area">
           <section class="table-wrap">
             <table>
-              <thead><tr><th>No</th><th>신청일</th><th>문서번호</th><th>품목명</th><th>단가</th><th>거래처/사유</th><th>배송장소/수신자</th><th>부고안내/청첩장</th><th>상태</th><th>관리메모</th></tr></thead>
+              <thead><tr><th>No</th><th>신청일</th><th>품목명</th><th>단가</th><th>거래처/사유</th><th>배송장소/수신자</th><th>상태</th><th>관리메모</th></tr></thead>
               <tbody id="tbody"></tbody>
             </table>
           </section>
@@ -1202,14 +1391,6 @@ padding-left:6px!important;
           </div>
           <div id="sidebar-empty" class="sidebar-empty">선택된 배송 건이 없습니다.<br>목록의 행을 클릭해 상세 정보를 확인하세요.</div>
           <div id="sidebar-content" class="hidden">
-            <div class="sidebar-section">
-              <h3>양식 구분</h3>
-              <div class="full form-mode-tabs" id="detail-mode-tabs">
-                <button type="button" id="detail-normal-mode" class="btn small">일반 양식</button>
-                <button type="button" id="detail-bs-mode" class="btn ghost small">BS 양식</button>
-              </div>
-              <p class="hint">양식을 잘못 선택했다면 여기서 바꾼 뒤 [저장]을 눌러주세요.</p>
-            </div>
             <div class="sidebar-section">
               <h3>기본 정보 수정</h3>
               <div class="form">
@@ -1244,8 +1425,6 @@ padding-left:6px!important;
 
 <div><label>거래처</label><input id="d-client" placeholder="거래처 입력"></div>
 <div><label>발송사유</label><input id="d-reason" placeholder="예: 모친 부고"></div>
-<div><label>발신 문서번호</label><input id="d-docno" placeholder="예: 전략구매-2026-0123"></div>
-<div class="detail-general-only"><label>관계(실적 등)</label><input id="d-relation" placeholder="관계 또는 실적 내용"></div>
               </div>
             </div>
             <div id="bs-detail-fields" class="sidebar-section hidden">
@@ -1269,7 +1448,7 @@ padding-left:6px!important;
 
     <div>
       <label>수량</label>
-      <input id="d-bs-qty" placeholder="예: 화환,근조기2개,용품">
+      <input id="d-bs-qty" placeholder="예: 화환,근조기2개">
     </div>
   </div>
 </div>
@@ -1277,11 +1456,11 @@ padding-left:6px!important;
              <h3>배송장소 / 수신자 수정</h3>
               <textarea id="d-recipient" rows="6" placeholder="배송일, 시간, 배송장소, 수신자, 연락처 등을 입력"></textarea>
             </div>
-          <div class="sidebar-section">
+          <div class="sidebar-section detail-general-only">
             <h3>문구 수정</h3>
               <textarea id="d-message" rows="4" placeholder="리본 문구 또는 전달 문구 입력"></textarea>
             </div>
-             <div class="sidebar-section">
+             <div class="sidebar-section detail-general-only">
             <h3>부고안내 / 청첩장 수정</h3>
             <textarea id="d-notice" rows="4" placeholder="관련 안내 내용 입력"></textarea>
 </div>
@@ -1293,7 +1472,7 @@ padding-left:6px!important;
                 <div><label>담당자</label><input id="d-manager" placeholder="담당자 입력"></div>
       <div><label>변경 사유(선택)</label><input id="d-reason-change" placeholder="예: 업체 배송 요청 확인, 담당자 확인 요청 등"></div>
               </div>
-              <div class="sidebar-actions"><button id="delete-detail" class="btn red" type="button">삭제</button><button id="save-detail" class="btn" type="button">저장</button></div>
+              <div class="sidebar-actions edit-only"><button id="delete-detail" class="btn red" type="button">삭제</button><button id="save-detail" class="btn" type="button">저장</button></div>
             </div>
             <div id="kakao-resend-wrap" style="margin-top:10px;display:none">
   <button id="kakao-resend" ...>📨 카카오 배송 안내 다시 보내기</button>
@@ -1306,24 +1485,6 @@ padding-left:6px!important;
         </aside>
       </section>
 
-
-      <section class="panel report-panel" id="report-panel" style="margin-top:16px">
-        <h2 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          월말 정산 리포트
-          <span class="report-controls">
-            <button id="report-prev" class="btn ghost small" type="button">◀ 이전달</button>
-            <select id="report-month"></select>
-            <button id="report-next" class="btn ghost small" type="button">다음달 ▶</button>
-            <button id="report-export" class="btn small" type="button">엑셀 내보내기</button>
-            <button id="report-print" class="btn ghost small" type="button">인쇄</button>
-          </span>
-        </h2>
-        <p class="hint" style="margin-bottom:12px">
-          품목명에 <b>BS</b>가 들어가면 <b>비에스</b>, 그 외는 <b>꽃과향기</b>로 자동 구분합니다.
-          비에스는 계산서 대조용, 꽃과향기는 실적 확인용입니다.
-        </p>
-        <div id="report-body"></div>
-      </section>
 
       <section class="panel" style="margin-top:16px">
         <h2>변경 이력</h2>
@@ -1396,15 +1557,14 @@ padding-left:6px!important;
           <div><label>빈소</label><input id="bs-funeral" placeholder="예: 삼성서울병원 장례식장 1호실"></div>
           <div><label>받는분(연락처)</label><input id="bs-recipient" placeholder="예: 홍길동(010-0000-0000)"></div>
           <div><label>故고인</label><input id="bs-deceased" placeholder="예: 故 김OO 님"></div>
-          <div><label>수량</label><input id="bs-qty" type="text" value="화환,근조기2개,용품" placeholder="예: 화환,근조기2개,용품"></div>
+         <input id="bs-qty" type="text" value="화환,근조기2개" placeholder="예: 화환,근조기2개">
         </div>
       </div>
 
-      <div><label>발신 문서번호</label><input id="a-docno" placeholder="예: 전략구매-2026-0123"></div>
       <div class="general-only"><label>관계(실적 등)</label><input id="a-relation" placeholder="관계 또는 실적 내용"></div>
       <div class="full general-only"><label>배송장소/수신자</label><textarea id="a-recipient" rows="3" placeholder="배송장소와 수신자 입력"></textarea></div>
-      <div class="full"><label>문구</label><textarea id="a-message" rows="3" placeholder="리본 문구 또는 전달 문구"></textarea></div>
-      <div class="full"><label>부고안내/청첩장</label><textarea id="a-notice" rows="3" placeholder="관련 안내 내용 입력"></textarea></div>
+      <div class="full general-only"><label>문구</label><textarea id="a-message" rows="3" placeholder="리본 문구 또는 전달 문구"></textarea></div>
+      <div class="full general-only"><label>부고안내/청첩장</label><textarea id="a-notice" rows="3" placeholder="관련 안내 내용 입력"></textarea></div>
 
       <div class="full"><label>관리메모</label><textarea id="a-memo" rows="3" placeholder="관리메모 입력"></textarea></div>
       <div><label>담당자</label><input id="a-manager" placeholder="담당자 입력"></div>
@@ -1471,10 +1631,313 @@ padding-left:6px!important;
     </div>
   </div>
 </div>
+<!-- =====================================================================
+     v32: 경조사 지침 팝업 — 휴가·휴직 업무처리지침(2026.03.01) <별표 2>
+     ===================================================================== -->
+<div id="guide-modal" class="modal-bg hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>직원 경조사 행정처리 안내표</h2>
+        <p class="hint">휴가 · 휴직 업무처리지침 (2026.03.01) &lt;별표 2&gt; · 금액 단위 : 만원</p>
+      </div>
+      <button class="btn ghost small close-modal" type="button">닫기</button>
+    </div>
+
+    <div class="guide-tabs">
+      <button type="button" class="guide-tab active" data-guide-view="flower">🌸 화환 발주 대상</button>
+      <button type="button" class="guide-tab" data-guide-view="all">전체 안내표</button>
+      <button type="button" class="guide-tab" data-guide-view="note">지급 기준 · 유의사항</button>
+    </div>
+
+    <!-- ── 1. 화환 발주 대상 (전략구매팀 소관) ───────────────────── -->
+    <div class="guide-view active" data-guide-panel="flower">
+      <div class="guide-note accent">
+        <h4>🌸 전략구매팀 소관 = 화환 · 근조기 · 물품</h4>
+        별표 2 에서 <b>화환이 나가는 경우는 아래 9가지</b>입니다. 여기에 없는 대상은
+        특가(경조휴가)나 복지기금 · 경조금만 해당되고 <b>화환은 발주하지 않습니다.</b>
+        <div style="margin-top:8px">
+          맨 오른쪽 <b>접수 양식</b> 열에 따라 신규 등록 시 양식을 고르면 됩니다 —
+          <span class="guide-chip">BS</span> 는 화환 · 근조기 · <b>물품</b>이 함께 나가는 건,
+          <span class="guide-chip gray">일반</span> 은 화환만 나가는 건입니다.
+        </div>
+      </div>
+
+      <div class="guide-scroll">
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>대상</th>
+              <th class="grp-sp">화환</th>
+              <th class="grp-sp">근조기</th>
+              <th class="grp-sp">물품</th>
+              <th class="grp-hr">공지</th>
+              <th class="grp-hr">특가</th>
+              <th>접수 양식</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="col-cat" rowspan="2">결혼</td><td class="col-target">본인</td>
+                <td class="flowercol yes">○</td><td class="flowercol no">–</td><td class="flowercol no">–</td><td class="no">–</td><td>7일</td>
+                <td><span class="guide-chip gray">일반</span></td></tr>
+            <tr><td class="col-target">자녀</td>
+                <td class="flowercol yes">○</td><td class="flowercol no">–</td><td class="flowercol no">–</td><td class="no">–</td><td>2일</td>
+                <td><span class="guide-chip gray">일반</span></td></tr>
+
+            <tr><td class="col-cat" rowspan="7">사망</td><td class="col-target">본인</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>전체</td><td class="no">–</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+            <tr><td class="col-target">배우자</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>전체</td><td>7일</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+            <tr><td class="col-target">본인 부모</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>전체</td><td>7일</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+            <tr><td class="col-target">배우자 부모</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>전체</td><td>7일</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+            <tr><td class="col-target">본인 (외)조부모</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>팀내</td><td>3일</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+            <tr><td class="col-target">자녀</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>전체</td><td>7일</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+            <tr><td class="col-target">본인 형제자매</td>
+                <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td><td>본부</td><td>5일</td>
+                <td><span class="guide-chip">BS</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="guide-legend">
+        <span>○ = 지원 대상</span><span>– = 해당 없음</span>
+        <span>공지 : 전체 / 본부 / 팀내 범위</span>
+      </div>
+
+      <div class="guide-note warn" style="margin-top:14px">
+        <h4>⚠️ 화환 미지원 대상 (특가 · 경조금만 해당)</h4>
+        <ul>
+          <li>결혼 — 본인의 형제자매, 배우자의 형제자매</li>
+          <li>사망 — 배우자 (외)조부모, 자녀의 배우자, 본인 형제자매의 배우자,
+              배우자 형제자매(배우자 포함), 본인 및 배우자 부모의 형제자매와 그 형제자매의 배우자</li>
+          <li>회갑 — 전 대상 (본인 / 배우자 / 본인 직계존속 / 배우자 직계존속)</li>
+          <li>출산 — 본인(복지기금만 해당), 배우자</li>
+        </ul>
+      </div>
+
+      <div class="guide-note" style="margin-top:0">
+        <h4>🏵️ 퇴직자 경조사 지원 <span class="guide-chip gray">별도 기준</span></h4>
+        <ul>
+          <li><b>대상</b> : 정년 및 명예 퇴직자</li>
+          <li><b>범위</b> : 본인 및 배우자 사망, 본인 부모의 사망, 자녀 결혼</li>
+          <li><b>기한</b> : 퇴직 이후 10년</li>
+          <li><b>지원</b> : 화환, 근조기, 임원경조금(원장 10만원 / 부원장 5만원),
+              알림 문자 발송(OB &amp; 팀장 이상)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── 2. 전체 안내표 ────────────────────────────────────────── -->
+    <div class="guide-view" data-guide-panel="all">
+      <div class="guide-scroll">
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th rowspan="2">구분</th>
+              <th rowspan="2">대상</th>
+              <th class="grp-hr" colspan="2">인재경영팀</th>
+              <th class="grp-sp" colspan="3">전략구매팀</th>
+              <th class="grp-fi" colspan="2">재무회계팀</th>
+              <th class="grp-pr" colspan="2">기획홍보팀 · 임원경조금</th>
+            </tr>
+            <tr>
+              <th class="grp-hr">공지</th><th class="grp-hr">특가</th>
+              <th class="grp-sp">화환</th><th class="grp-sp">근조기</th><th class="grp-sp">물품</th>
+              <th class="grp-fi">복지기금</th><th class="grp-fi">경조금</th>
+              <th class="grp-pr">원장</th><th class="grp-pr">부원장</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 결혼 -->
+            <tr><td class="col-cat" rowspan="4">결혼</td><td class="col-target">본인</td>
+              <td class="no">–</td><td>7일</td>
+              <td class="flowercol yes">○</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="num">150</td><td class="num">50</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">자녀</td>
+              <td class="no">–</td><td>2일</td>
+              <td class="flowercol yes">○</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="num">130</td><td class="num">50</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">본인의 형제자매</td>
+              <td class="no">–</td><td>1일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="num">20</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">배우자의 형제자매</td>
+              <td class="no">–</td><td>1일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+
+            <!-- 사망 -->
+            <tr><td class="col-cat" rowspan="12">사망</td><td class="col-target">본인</td>
+              <td>전체</td><td class="no">–</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">600</td><td class="num">150</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">배우자</td>
+              <td>전체</td><td>7일</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">350</td><td class="num">100</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">본인 부모</td>
+              <td>전체</td><td>7일</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">150</td><td class="num">50</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">배우자 부모</td>
+              <td>전체</td><td>7일</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">150</td><td class="num">50</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">본인 (외)조부모</td>
+              <td>팀내</td><td>3일</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">10</td><td class="no">–</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">배우자 (외)조부모</td>
+              <td>팀내</td><td>3일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">자녀</td>
+              <td>전체</td><td>7일</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">250</td><td class="num">100</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">자녀의 배우자</td>
+              <td>팀내</td><td>5일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">본인 형제자매</td>
+              <td>본부</td><td>5일</td>
+              <td class="flowercol yes">○</td><td class="flowercol yes">○</td><td class="flowercol yes">○</td>
+              <td class="num">70</td><td class="num">25</td><td class="num">10</td><td class="num">5</td></tr>
+            <tr><td class="col-target">본인 형제자매의 배우자</td>
+              <td class="no">–</td><td>5일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">배우자 형제자매 (배우자 포함)</td>
+              <td class="no">–</td><td>5일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">본인 및 배우자 부모의 형제자매와<br>그 형제자매의 배우자</td>
+              <td class="no">–</td><td>3일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+
+            <!-- 회갑 -->
+            <tr><td class="col-cat" rowspan="4">회갑</td><td class="col-target">본인</td>
+              <td class="no">–</td><td class="no">–</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="num">20</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">배우자</td>
+              <td class="no">–</td><td>3일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">본인 직계존속</td>
+              <td class="no">–</td><td>2일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="num">10</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+            <tr><td class="col-target">배우자 직계존속</td>
+              <td class="no">–</td><td>2일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+
+            <!-- 출산 -->
+            <tr><td class="col-cat">출산</td><td class="col-target">본인(복지기금만 해당), 배우자</td>
+              <td class="no">–</td><td>20일</td>
+              <td class="flowercol no">–</td><td class="flowercol no">–</td><td class="flowercol no">–</td>
+              <td class="num">20</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="guide-legend">
+        <span>○ = 지원 대상</span><span>– = 해당 없음</span>
+        <span>복지기금 · 경조금 · 임원경조금 단위 : 만원</span>
+        <span>파란색 열 = 전략구매팀 소관</span>
+      </div>
+    </div>
+
+    <!-- ── 3. 지급 기준 · 유의사항 ──────────────────────────────── -->
+    <div class="guide-view" data-guide-panel="note">
+      <div class="guide-note">
+        <h4>📢 OB 공지</h4>
+        직책 : <b>팀장 이상</b>
+      </div>
+
+      <div class="guide-note">
+        <h4>🗓️ 특가 (경조휴가)</h4>
+        <ul>
+          <li><b>근태신청</b> : 근태신청서 &gt; 경조휴가신청서로 신청
+            <div class="sub">– 증빙서류 첨부 필수 : 결혼-청첩장, 사망-사망확인서/부고안내문,
+              회갑-가족관계증명서, 출산-출생증명서</div>
+          </li>
+          <li>특가는 사유 발생일자로부터 <b>연속되는 일자 사용을 원칙</b>으로 하되,
+            사유발생일을 포함한 특가기간에 휴일이 포함된 경우 해당 휴일 수를 특가 부여일수에서 제외
+            <div class="sub">예외 (1) 회갑특가 : 대상자 출생연도를 기준으로 당해연도 내에 연속일자로 지정하여 사용 (금 · 월 사용불가)</div>
+            <div class="sub">예외 (2) 결혼특가 : 사유 발생일자 이전 희망일자로부터 연속일자로 지정하여 사용이 가능함</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="guide-note">
+        <h4>💰 경조금</h4>
+        대상자 : <b>특별채용 / 채용형인턴</b>
+        <div class="sub">(대상자 범위) 근거공문 : 인사팀-7557 (2014.9.17)</div>
+      </div>
+
+      <div class="guide-note">
+        <h4>🏦 복지기금</h4>
+        대상자 : <b>정규직</b>
+        <div class="sub">경조사 발생일로부터 <b>30일 이내</b>에 경조금지급신청서 제출
+          (자세한 사항은 사내근로복지기금 운영규정 참조)</div>
+      </div>
+
+      <div class="guide-note">
+        <h4>🏵️ 퇴직자 경조사 지원</h4>
+        <ul>
+          <li><b>대상</b> : 정년 및 명예 퇴직자</li>
+          <li><b>범위</b> : 본인 및 배우자 사망, 본인 부모의 사망, 자녀 결혼</li>
+          <li><b>기한</b> : 퇴직 이후 10년</li>
+          <li><b>지원</b> : 화환, 근조기, 임원경조금(원장 : 10만원, 부원장 : 5만원),
+            알림 문자 발송(OB &amp; 팀장 이상)</li>
+        </ul>
+      </div>
+
+      <div class="guide-note accent">
+        <h4>🔷 BS 화환 = 임직원 경조사 · 물품 동시 발송 건</h4>
+        <span class="guide-chip">BS</span> 양식은 <b>임직원 경조사 중 화환 · 근조기 · 물품이
+        함께 나가는 건</b>을 접수하는 양식입니다. 별표 2 에서
+        <b>물품 ○ 인 대상은 아래 7가지이며, 모두 「사망」 구분</b>입니다.
+        <ul style="margin-top:8px">
+          <li>본인</li>
+          <li>배우자</li>
+          <li>본인 부모 / 배우자 부모</li>
+          <li>본인 (외)조부모</li>
+          <li>자녀</li>
+          <li>본인 형제자매</li>
+        </ul>
+        <div style="margin-top:10px">
+          <b>접수 방법</b>
+          <ul>
+            <li>BS 양식 입력 항목 : <b>빈소 · 받는분(연락처) · 고인 · 수량</b></li>
+            <li>수량 기본값 : <b>화환, 근조기 2개</b> (물품 동반)</li>
+            <li><b>결혼</b> 건(본인 · 자녀)은 화환만 나가므로
+              <span class="guide-chip gray">일반</span> 양식으로 접수</li>
+            <li>물품 ○ 가 아닌 사망 대상(배우자 (외)조부모, 자녀의 배우자 등)은
+              <b>화환 자체가 나가지 않습니다</b></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="save-overlay" class="save-overlay" aria-live="polite" aria-busy="true">
   <div class="save-box">
     <img class="save-logo" src="data:image/png;base64,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" alt="FITI">
-    <div class="save-brand">전략구매팀</div>
     <div class="save-spinner"></div>
     <div class="save-check">✓</div>
     <div id="save-overlay-title" class="save-title">저장 중...</div>
@@ -1572,7 +2035,6 @@ let state = {
   serverSaveVersion:'',
   loadedServerSaveVersion:'',
   saveBaseVersion:'',
-  saveAs:'',
   dirty:false
 };
 let currentDetailId = null;
@@ -1587,21 +2049,12 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const LOGIN_STORAGE_KEY = 'flowerDeliveryLoginUser';
 const ADMIN_USER_NAME = '전략구매팀';
 
-/* 로그인 계정.
-   id      : 로그인 창에 입력하는 아이디
-   pw      : 비밀번호
-   role    : 'manager' 면 엑셀 불러오기 등 관리 기능 표시
-   saveAs  : 서버 저장 시 보낼 이름. 서버(api/deliveries.js)가 '전략구매팀'만 저장을 허용한다.
-   계정을 늘리려면 아래 배열에 한 줄 추가하면 된다. */
-const ACCOUNTS = [
-  { id:'관리자',     pw:'8124', role:'manager', saveAs: ADMIN_USER_NAME },
-  { id:'전략구매팀', pw:'8124', role:'manager', saveAs: ADMIN_USER_NAME }
-];
-
-function findAccount(id, pw){
-  const uid = String(id || '').trim();
-  const upw = String(pw || '');
-  return ACCOUNTS.find(a => a.id === uid && a.pw === upw) || null;
+// 수정 권한: 관리자(전략구매팀)로 로그인한 경우에만 true 입니다.
+function canEdit(){ return state.role === 'manager'; }
+function requireEdit(){
+  if(canEdit()) return true;
+  alert('조회 전용 계정입니다.\n\n배송현황 수정/저장/삭제는 관리자(' + ADMIN_USER_NAME + ') 계정으로 로그인해야 가능합니다.');
+  return false;
 }
 const MAX_LOGS = 30;
 const LOG_DISPLAY_LIMIT = 5;
@@ -1703,10 +2156,12 @@ function applyLoginView(){
   $('#user-label').textContent = `${state.user} 님`;
 
   const roleLabel = $('#role-label');
-  roleLabel.textContent = state.role === 'manager' ? '관리자' : '';
-  roleLabel.classList.toggle('hidden', state.role !== 'manager');
+  roleLabel.textContent = state.role === 'manager' ? '관리자' : '조회 전용';
+  roleLabel.classList.remove('hidden');
+  roleLabel.classList.toggle('viewer', state.role !== 'manager');
 
   document.body.classList.toggle('role-manager', state.role === 'manager');
+  document.body.classList.toggle('role-viewer', state.role !== 'manager');
   document.documentElement.classList.remove('auto-login-pending');
 }
 
@@ -1714,8 +2169,7 @@ function saveLoginSession(){
   try{
     localStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify({
       user: state.user,
-      role: state.role,
-      saveAs: state.saveAs || state.user
+      role: state.role
     }));
   }catch(err){
     console.warn('로그인 정보 저장에 실패했습니다.', err);
@@ -1765,7 +2219,7 @@ async function loadFromServer(options = {}){
     }
 
     state.data = Array.isArray(result.data)
-      ? result.data.map((r,i)=>({ ...r, id: Number(r.id) || i + 1, message: withDefaultMessage(r.message) }))
+      ? result.data.map((r,i)=>({ ...r, id: Number(r.id) || i + 1 }))
       : [];
 
     state.serverLastSavedAt = String(result.lastSavedAt || '');
@@ -1800,7 +2254,7 @@ async function saveToServer(){
 
    console.log('[POST 직전]', {
     user: state.user,
-    lastSavedBy: state.saveAs || state.user || '',
+    lastSavedBy: state.user || '',
     expectedSaveVersion,
     loadedServerSaveVersion: state.loadedServerSaveVersion,
     loadedServerSavedAt: state.loadedServerSavedAt,
@@ -1812,7 +2266,7 @@ async function saveToServer(){
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({
   data: state.data,
-  lastSavedBy: state.saveAs || state.user || '',
+  lastSavedBy: state.user || '',
   expectedSaveVersion
 })
   });
@@ -1937,8 +2391,7 @@ async function saveLogsToServer(){
   const res = await fetch('/api/logs', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
-    // 서버(api/logs.js)가 user 값으로 관리자 여부를 확인하므로 반드시 함께 보낸다.
-    body: JSON.stringify({ data: state.logs, user: state.saveAs || state.user || '' })
+    body: JSON.stringify({ data: state.logs, user: state.user || '' })
   });
   const result = await res.json();
 
@@ -1950,6 +2403,7 @@ async function saveLogsToServer(){
 }
 
 async function saveAndExportDelivery(){
+  if(!requireEdit()) return;
   if(saveInProgress){
     return;
   }
@@ -2023,18 +2477,8 @@ async function restoreLoginSession(){
       return false;
     }
 
-  // 저장된 세션도 현재 계정 목록에 있는 아이디만 인정한다.
-  // (계정을 지우거나 비밀번호를 바꾸면 기존 로그인도 풀린다)
-  const acc = ACCOUNTS.find(a => a.id === String(userInfo.user || '').trim());
-  if(!acc){
-    clearLoginSession();
-    document.documentElement.classList.remove('auto-login-pending');
-    return false;
-  }
-
-  state.user = acc.id;
-  state.role = acc.role;
-  state.saveAs = acc.saveAs || acc.id;
+  state.user = String(userInfo.user || '').trim();
+  state.role = state.user === ADMIN_USER_NAME ? 'manager' : 'user';
 
 applyLoginView();
 applyRoleVisibility();
@@ -2067,27 +2511,22 @@ function initKakaoShare(){
   return true;
 }
   function applyRoleVisibility(){
+  const editable = canEdit();
+
   const excelBox = document.querySelector('.file-input-wrap');
+  if(excelBox) excelBox.classList.toggle('hidden', !editable);
 
-  if(!excelBox) return;
+  // 상세 사이드바 입력칸은 조회 전용 계정에서 입력 자체가 되지 않도록 잠급니다.
+  document.querySelectorAll('#sidebar-content input, #sidebar-content select, #sidebar-content textarea')
+    .forEach(el => { el.disabled = !editable; });
 
-  if(state.role === 'manager'){
-    excelBox.classList.remove('hidden');
-  }else{
-    excelBox.classList.add('hidden');
-  }
+  document.body.classList.toggle('role-manager', editable);
+  document.body.classList.toggle('role-viewer', !editable);
 }
 
 // ============================== 유틸 함수 ==============================
 function nowText(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
 function escapeHtml(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function noticeCellHtml(v){
-  // 부고안내/청첩장은 링크만 붙여넣는 경우가 많아, 주소면 바로 열 수 있게 링크로 표시합니다.
-  const text = String(v ?? '').trim();
-  if(!text) return '-';
-  if(/^https?:\/\/[^\s]+$/i.test(text)) return `<a class="notice-link" href="${escapeHtml(text)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
-  return escapeHtml(text);
-}
 function num(v){ return Number(String(v ?? '').replace(/[^0-9.-]/g,'')) || 0; }
 function money(v){ return num(v).toLocaleString('ko-KR'); }
 function monthKey(v){
@@ -2275,7 +2714,6 @@ function mapRowsToData(rawRows){
     price: findCol(headers, ['단가','금액','가격','비용']),
     client: findCol(headers, ['거래처명','거래처','업체명','발주처']),
     reason: findCol(headers, ['발송사유','사유','구분','용도']),
-    docNo: findCol(headers, ['발신문서번호','문서번호','발신번호','공문번호']),
     relation: findCol(headers, ['관계']),
     recipient: findCol(headers, ['수신자및장소','배송장소수신자','배송장소','수신자','장소','주소']),
     message: findCol(headers, ['문구','리본문구','메시지']),
@@ -2292,10 +2730,9 @@ function mapRowsToData(rawRows){
     price: num(r[col.price]),
     client: String(r[col.client] ?? '').trim(),
     reason: String(r[col.reason] ?? '').trim(),
-    docNo: String(r[col.docNo] ?? '').trim(),
     relation: String(r[col.relation] ?? '').trim(),
     recipient: String(r[col.recipient] ?? '').trim(),
-    message: withDefaultMessage(r[col.message]),
+    message: String(r[col.message] ?? '').trim(),
     notice: String(r[col.notice] ?? '').trim(),
     memo: String(r[col.memo] ?? '').trim(),
     manager: String(r[col.manager] ?? '').trim(),
@@ -2442,7 +2879,7 @@ function filteredData(){
   const noMap = buildDisplayNoMap();
 
   const result = state.data.filter(r => {
-    const text=[r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)].join(' ').toLowerCase();
+    const text=[r.date,r.item,r.price,r.client,r.reason,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)].join(' ').toLowerCase();
     return (!q || text.includes(q)) &&
       (st==='all'||r.status===st) &&
       (month==='all'||rowMonth(r)===month) &&
@@ -2711,15 +3148,10 @@ function renderTable(){
             <div class="mobile-card-label">담당자</div>
             <div class="mobile-card-value">${escapeHtml(r.manager||'-')}</div>
           </div>
-          <div class="mobile-card-field">
-            <div class="mobile-card-label">문서번호</div>
-            <div class="mobile-card-value">${escapeHtml(r.docNo||'-')}</div>
-          </div>
           ${recipientShort?`<div class="mobile-card-field full"><div class="mobile-card-label">배송장소/수신자</div><div class="mobile-card-value">${escapeHtml(recipientShort)}</div></div>`:''}
-          ${r.notice?`<div class="mobile-card-field full"><div class="mobile-card-label">부고안내/청첩장</div><div class="mobile-card-value">${noticeCellHtml(r.notice)}</div></div>`:''}
         </div>
         <div class="mobile-card-bottom">
-          <select class="mobile-card-select" data-id="${r.id}">
+          <select class="mobile-card-select" data-id="${r.id}" ${canEdit()?'':'disabled'}>
             ${STATUS_OPTIONS.map(s=>`<option value="${s.value}" ${s.value===r.status?'selected':''}>${s.label}</option>`).join('')}
           </select>
           ${r.memo?`<div class="mobile-card-memo">📝 ${escapeHtml(r.memo)}</div>`:''}
@@ -2727,7 +3159,6 @@ function renderTable(){
       </div>`;
     }).join('');
 
-    cardContainer.querySelectorAll('.notice-link').forEach(a=>a.addEventListener('click', e=>e.stopPropagation()));
     cardContainer.querySelectorAll('.mobile-card').forEach(card=>{
       card.addEventListener('click', ()=>openDetail(Number(card.dataset.id)));
     });
@@ -2736,6 +3167,7 @@ function renderTable(){
       sel.addEventListener('change', e=>{
         e.stopPropagation();
         const row=state.data.find(x=>x.id===Number(e.target.dataset.id)); if(!row) return;
+        if(!requireEdit()){ e.target.value = row.status; return; }
         const before=statusLabel(row.status), after=statusLabel(e.target.value);
         const reason = prompt('상태 변경 사유를 입력하세요. (선택 사항)', '') || '';
         row.status=e.target.value;
@@ -2755,15 +3187,14 @@ function renderTable(){
   const cardContainer = $('#mobile-card-list');
   if(cardContainer) cardContainer.style.display = 'none';
 
-  if(!state.data.length){ $('#tbody').innerHTML='<tr><td colspan="10" class="empty">아직 업로드된 데이터가 없습니다.<br>상단에서 화환배송관리.xlsx 파일을 불러와주세요.</td></tr>'; return; }
-  if(!data.length){ $('#tbody').innerHTML='<tr><td colspan="10" class="empty">현재 필터 조건에 맞는 데이터가 없습니다.<br>필터 초기화를 눌러 확인해보세요.</td></tr>'; return; }
+  if(!state.data.length){ $('#tbody').innerHTML='<tr><td colspan="8" class="empty">아직 업로드된 데이터가 없습니다.<br>상단에서 화환배송관리.xlsx 파일을 불러와주세요.</td></tr>'; return; }
+  if(!data.length){ $('#tbody').innerHTML='<tr><td colspan="8" class="empty">현재 필터 조건에 맞는 데이터가 없습니다.<br>필터 초기화를 눌러 확인해보세요.</td></tr>'; return; }
 $('#tbody').innerHTML=data.map(r=>{
   const no = displayNo(r, noMap);
 
   return `<tr class="data-row ${currentDetailId===r.id?'selected':''}" data-id="${r.id}">
     <td>${no}</td>
 <td>${escapeHtml(r.date)}</td>
-<td><div class="clip">${escapeHtml(r.docNo || '-')}</div></td>
 <td class="${r.formType === 'bs' ? 'bs-item-cell' : ''}">
   ${r.formType === 'bs' ? '<span class="bs-row-badge">BS</span>' : ''}
   <b>${escapeHtml(r.item)}</b>
@@ -2771,8 +3202,7 @@ $('#tbody').innerHTML=data.map(r=>{
 <td class="price">${money(r.price)}</td>
     <td><div class="clip"><b>${escapeHtml(r.client || '-')}</b><br><span class="muted">${escapeHtml(r.reason || '')}</span></div></td>
     <td><div class="clip">${escapeHtml(r.recipient)}</div></td>
-    <td><div class="clip">${noticeCellHtml(r.notice)}</div></td>
-    <td><select class="row-status" data-id="${r.id}">${STATUS_OPTIONS.map(s=>`<option value="${s.value}" ${s.value===r.status?'selected':''}>${s.label}</option>`).join('')}</select></td>
+    <td><select class="row-status" data-id="${r.id}" ${canEdit()?'':'disabled'}>${STATUS_OPTIONS.map(s=>`<option value="${s.value}" ${s.value===r.status?'selected':''}>${s.label}</option>`).join('')}</select></td>
     <td><div class="clip">${escapeHtml(r.memo || '-')}</div></td>
   </tr>`;
 }).join('');
@@ -2781,6 +3211,7 @@ $('#tbody').innerHTML=data.map(r=>{
     sel.addEventListener('change', e=>{
       e.stopPropagation();
       const row=state.data.find(x=>x.id===Number(e.target.dataset.id)); if(!row) return;
+        if(!requireEdit()){ e.target.value = row.status; return; }
       const before=statusLabel(row.status), after=statusLabel(e.target.value);
       const reason = prompt('상태 변경 사유를 입력하세요. (선택 사항)', '') || '';
       row.status=e.target.value;
@@ -2791,161 +3222,8 @@ $('#tbody').innerHTML=data.map(r=>{
       if(e.target.value === 'completed') openKakaoModal(row);
     });
   });
-  $$('.notice-link').forEach(a=>a.addEventListener('click', e=>e.stopPropagation()));
   $$('.data-row').forEach(tr=>tr.addEventListener('click',()=>openDetail(Number(tr.dataset.id))));
 }
-/* ====================== 월말 정산 리포트 ======================
-   품목명에 BS가 들어가면 비에스, 나머지는 꽃과향기로 자동 구분한다.
-   (BS 양식 기능이 생기기 전에 등록된 건은 formType이 비어 있어서 품목명으로 판별한다) */
-const REPORT_VENDORS = [
-  { key:'bs',     name:'비에스',   cls:'bs',     desc:'계산서 대조용' },
-  { key:'flower', name:'꽃과향기', cls:'flower', desc:'실적 확인용' }
-];
-
-function reportVendorOf(r){
-  return /BS/i.test(String(r.item || '')) || r.formType === 'bs' ? 'bs' : 'flower';
-}
-
-function reportMonths(){
-  const set = new Set();
-  state.data.forEach(r => {
-    const m = String(r.date || '').trim().slice(0, 7);
-    if(/^\d{4}-\d{2}$/.test(m)) set.add(m);
-  });
-  return Array.from(set).sort().reverse();
-}
-
-let reportMonth = '';
-
-function fillReportMonths(){
-  const sel = $('#report-month');
-  if(!sel) return;
-  const months = reportMonths();
-  if(!months.length){ sel.innerHTML = '<option value="">데이터 없음</option>'; reportMonth=''; return; }
-  if(!months.includes(reportMonth)) reportMonth = months[0];
-  sel.innerHTML = months.map(m => `<option value="${m}" ${m===reportMonth?'selected':''}>${m}</option>`).join('');
-}
-
-function reportRows(month){
-  return state.data
-    .filter(r => String(r.date || '').slice(0, 7) === month)
-    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-}
-
-function renderReport(){
-  const box = $('#report-body');
-  if(!box) return;
-  fillReportMonths();
-
-  if(!reportMonth){
-    box.innerHTML = '<div class="report-empty">데이터가 없습니다. 먼저 배송현황을 불러와주세요.</div>';
-    return;
-  }
-
-  const rows = reportRows(reportMonth);
-  if(!rows.length){
-    box.innerHTML = `<div class="report-empty">${escapeHtml(reportMonth)} 에 등록된 건이 없습니다.</div>`;
-    return;
-  }
-
-  box.innerHTML = REPORT_VENDORS.map(v => {
-    const list = rows.filter(r => reportVendorOf(r) === v.key);
-    const sum = list.reduce((a, r) => a + num(r.price), 0);
-
-    // 품목별 소계 — 계산서에 적힌 품목·수량과 맞춰보기 위한 것
-    const byItem = {};
-    list.forEach(r => {
-      const k = r.item || '(품목없음)';
-      if(!byItem[k]) byItem[k] = { n:0, amt:0 };
-      byItem[k].n++; byItem[k].amt += num(r.price);
-    });
-    const chips = Object.keys(byItem).sort().map(k =>
-      `<span class="report-chip">${escapeHtml(k)} ${byItem[k].n}건 · ${money(byItem[k].amt)}원</span>`).join('');
-
-    const body = list.length ? list.map(r => `
-      <tr>
-        <td>${escapeHtml(r.date || '')}</td>
-        <td>${escapeHtml(r.docNo || '')}</td>
-        <td><div class="clip">${escapeHtml(r.client || r.reason || '')}</div></td>
-        <td>${escapeHtml(r.item || '')}</td>
-        <td>${v.key === 'bs' ? escapeHtml(r.bsQty || '') : ''}</td>
-        <td class="price">${money(r.price)}</td>
-        <td><div class="clip">${escapeHtml((r.recipient || '').split('\n')[0])}</div></td>
-        <td>${statusBadge(r.status)}</td>
-      </tr>`).join('')
-      : `<tr><td colspan="8" class="report-empty">해당 건이 없습니다.</td></tr>`;
-
-    const totalRow = list.length ? `
-      <tr class="report-total-row">
-        <td colspan="5">합계</td>
-        <td class="price">${money(sum)}</td>
-        <td colspan="2">${list.length}건</td>
-      </tr>` : '';
-
-    return `
-      <div class="report-group ${v.cls}">
-        <div class="report-head">
-          <div class="report-name">${escapeHtml(v.name)} <span class="hint" style="font-weight:700">${escapeHtml(v.desc)}</span></div>
-          <div class="report-sum">건수 <b>${list.length}</b>건 · 합계 <b>${money(sum)}</b>원</div>
-        </div>
-        <div class="report-tally">${chips || '<span class="report-chip">내역 없음</span>'}</div>
-        <div class="table-wrap" style="box-shadow:none">
-          <table>
-            <thead><tr>
-              <th>신청일</th><th>문서번호</th><th>거래처/사유</th><th>품목</th>
-              <th>수량</th><th>단가</th><th>수신처</th><th>상태</th>
-            </tr></thead>
-            <tbody>${body}${totalRow}</tbody>
-          </table>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function buildReportRows(month){
-  const rows = reportRows(month);
-  const out = [[`${month} 월말 정산 리포트`], []];
-
-  REPORT_VENDORS.forEach(v => {
-    const list = rows.filter(r => reportVendorOf(r) === v.key);
-    const sum = list.reduce((a, r) => a + num(r.price), 0);
-
-    out.push([`${v.name} (${v.desc})`, `${list.length}건`, `${sum}원`]);
-    out.push(['신청일','문서번호','거래처/사유','품목','수량','단가','수신처','상태']);
-
-    list.forEach(r => out.push([
-      r.date || '', r.docNo || '', r.client || r.reason || '', r.item || '',
-      v.key === 'bs' ? (r.bsQty || '') : '',
-      num(r.price), (r.recipient || '').split('\n')[0], statusLabel(r.status)
-    ]));
-
-    out.push(['합계','','','','', sum, `${list.length}건`, '']);
-    out.push([]);
-  });
-
-  return out;
-}
-
-function exportReportXlsx(){
-  if(!reportMonth) return alert('내보낼 월이 없습니다.');
-  const rows = reportRows(reportMonth);
-  if(!rows.length) return alert(`${reportMonth} 에 등록된 건이 없습니다.`);
-
-  saveWorkbookOffline(`화환_월말리포트_${reportMonth}.xlsx`, [
-    { name:'월말리포트', rows: buildReportRows(reportMonth) }
-  ]);
-}
-
-function stepReportMonth(dir){
-  const months = reportMonths();          // 최신 → 과거 순
-  const i = months.indexOf(reportMonth);
-  if(i < 0) return;
-  const next = months[i + (dir < 0 ? 1 : -1)];   // 이전달 = 배열에서 뒤쪽
-  if(!next) return;
-  reportMonth = next;
-  renderReport();
-}
-
 function renderLogs(){
   const logs = state.logs.slice(0,LOG_DISPLAY_LIMIT);
 
@@ -2974,7 +3252,7 @@ function renderLogs(){
       : '<div class="mobile-log-empty">아직 변경 이력이 없습니다.</div>';
   }
 }
-function renderAll(rebuildFilters=true){ if(rebuildFilters) fillFilters(); renderSummary(); renderTable(); renderLogs(); renderReport(); $('#source-info').textContent = `현재 불러온 파일: ${state.sourceFile || '없음'}${lastSavedText()}`;}
+function renderAll(rebuildFilters=true){ if(rebuildFilters) fillFilters(); renderSummary(); renderTable(); renderLogs(); $('#source-info').textContent = `현재 불러온 파일: ${state.sourceFile || '없음'}${lastSavedText()}`;}
 // ============================== 상세 사이드바 ==============================
 function openDetail(id){
   const r=state.data.find(x=>x.id===id); if(!r) return; currentDetailId=id;
@@ -2993,80 +3271,55 @@ if(r.formType === 'bs'){
   $('#d-reason').value=r.reason || '';
   $('#d-recipient').value=r.recipient || '';
   $('#kakao-resend-wrap').style.display = r.status === 'completed' ? 'block' : 'none';
-  // 문구가 비어 있으면 기본 문구를 실제 값으로 채워둡니다.
-  // (예시 글씨가 아니라 실제 값이라야 저장 및 카카오 안내문에 반영됩니다.)
-  $('#d-message').value=withDefaultMessage(r.message);
+  $('#d-message').value=r.message || '';
   $('#d-notice').value=r.notice || '';
-  if($('#d-docno')) $('#d-docno').value = r.docNo || '';
-  if($('#d-relation')) $('#d-relation').value = r.relation || '';
 
-  // BS 관련 입력값은 양식과 상관없이 먼저 채워둡니다.
-  // 그래야 일반 <-> BS 를 오갈 때 이전에 입력한 내용이 남아 있습니다.
+  const isBs = r.formType === 'bs';
+
+$('#bs-detail-fields')?.classList.toggle('hidden', !isBs);
+$$('.detail-general-only').forEach(el=>el.classList.toggle('hidden', isBs));
+
+if(isBs){
   $('#d-bs-hall').value = r.bsHall || '';
   $('#d-bs-receiver').value = r.bsReceiver || '';
   $('#d-bs-deceased').value = r.bsDeceased || '';
-  $('#d-bs-qty').value = r.bsQty || DEFAULT_BS_QTY;
-
-  setDetailFormMode(r.formType === 'bs' ? 'bs' : 'normal');
+  $('#d-bs-qty').value = r.bsQty || '화환,근조기2개';
+}
   $('#d-status').value=r.status; $('#d-manager').value=r.manager||''; $('#d-memo').value=r.memo||''; $('#d-reason-change').value='';
   const logs=state.logs.filter(l=>l.rowId===id);
   $('#detail-log-body').innerHTML=logs.length ? logs.map(l=>`<tr class="${isDeletedLog(l) ? 'log-deleted' : ''}"><td>${escapeHtml(l.time)}</td><td>${logActionHtml(l)}</td><td>${escapeHtml(l.before)}</td><td>${escapeHtml(l.after)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">해당 건 변경 이력이 없습니다.</td></tr>';
+  applyRoleVisibility();
   renderTable();
 }
-let detailFormMode = 'normal';
-
-function setDetailFormMode(mode){
-  detailFormMode = mode === 'bs' ? 'bs' : 'normal';
-  const isBs = detailFormMode === 'bs';
-
-  $('#bs-detail-fields')?.classList.toggle('hidden', !isBs);
-  $$('.detail-general-only').forEach(el=>el.classList.toggle('hidden', isBs));
-
-  const normalBtn = $('#detail-normal-mode');
-  const bsBtn = $('#detail-bs-mode');
-  if(normalBtn && bsBtn){
-    normalBtn.classList.toggle('ghost', isBs);
-    bsBtn.classList.toggle('ghost', !isBs);
-  }
-}
-
 function closeDetailSidebar(){ currentDetailId=null; $('#sidebar-content')?.classList.add('hidden'); $('#sidebar-empty')?.classList.remove('hidden'); $('#detail-sub').textContent='왼쪽 목록에서 행을 클릭하면 상세 정보가 표시됩니다.'; renderTable(); }
 function closeModals(){ $$('.modal-bg').forEach(m=>m.classList.add('hidden')); }
 
 function buildKakaoCompleteMessage(row){
   if(row.formType === 'bs'){
-    const bsSections = [
+    return [
       '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
       '안녕하세요, 아래 BS 화환배송건을 요청합니다.',
       [
-        `■ 발신 문서번호: ${row.docNo || '-'}`,
         `■ 빈소: ${row.bsHall || '-'}`,
         `■ 받는분(연락처): ${row.bsReceiver || '-'}`,
         `■ 고인: ${row.bsDeceased || '-'}`,
-        `■ 수량: ${row.bsQty || DEFAULT_BS_QTY}`
+        `■ 수량: ${row.bsQty || '화환,근조기2개'}`
       ].join('\n'),
-      `문구:\n${withDefaultMessage(row.message)}`
-    ];
-
-    if(row.notice) bsSections.push(`부고안내/청첩장:\n${row.notice}`);
-
-    bsSections.push('감사합니다.');
-    return bsSections.join('\n\n');
+      '감사합니다.'
+    ].join('\n\n');
   }
 
   const sections = [
     '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
     '안녕하세요, 아래 화환배송건을 요청합니다.',
     [
-      `발신 문서번호: ${row.docNo || '-'}`,
       `신청일: ${row.date || '-'}`,
       `품목명: ${row.item || '-'}`,
       `거래처/발송사유: ${row.client || row.reason || '-'}`,
-      `관계(실적 등): ${row.relation || '-'}`,
       '배송장소/수신자:',
       row.recipient || '-'
     ].join('\n'),
-    `문구:\n${withDefaultMessage(row.message)}`
+    `문구:\n${row.message || '-'}`
   ];
 
   if(row.notice) sections.push(`부고안내/청첩장:\n${row.notice}`);
@@ -3122,17 +3375,15 @@ function sendKakaoShare(){
     return;
   }
 
-  // 공유 링크의 도메인도 카카오 콘솔에 등록된 것이어야 합니다.
-  // 대시보드 자기 주소를 쓰면 JS SDK 도메인과 항상 일치하므로 도메인을 따로 등록할 필요가 없습니다.
-  const shareUrl = location.origin;
-
   Kakao.Share.sendDefault({
     objectType: 'text',
     text: message,
     link: {
-      mobileWebUrl: shareUrl,
-      webUrl: shareUrl
-    }
+    mobileWebUrl: 'https://www.fiti.re.kr/web/contents/FT0505010000.do?schM=view&schStr=%EC%A0%84%EB%9E%B5%EA%B5%AC%EB%A7%A4%ED%8C%80',
+  webUrl: 'https://www.fiti.re.kr/web/contents/FT0505010000.do?schM=view&schStr=%EC%A0%84%EB%9E%B5%EA%B5%AC%EB%A7%A4%ED%8C%80'
+
+    },
+    
   });
 }
 
@@ -3140,40 +3391,6 @@ function sendKakaoShare(){
 function todayInputValue(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
 function nextRowId(){ return state.data.length ? Math.max(...state.data.map(r=>Number(r.id)||0)) + 1 : 1; }
 let addFormMode = 'normal';
-
-const BS_ITEM_NAME = 'BS_근조화환';
-
-// 문구 기본값. 필요하면 등록창이나 상세에서 그대로 고쳐 쓸 수 있습니다.
-const DEFAULT_MESSAGE = '(재)FITI시험연구원 원장 윤주경';
-
-// 문구가 비었거나 '-' 같은 빈칸 표시면 기본 문구를 넣어줍니다.
-function withDefaultMessage(v){
-  const text = String(v ?? '').trim();
-  if(!text || text === '-') return DEFAULT_MESSAGE;
-  return text;
-}
-
-// BS 양식 수량 기본값
-const DEFAULT_BS_QTY = '화환,근조기2개,용품';
-
-// [BS 양식] 버튼을 눌렀을 때 품목도 BS_근조화환으로 맞춰줍니다.
-// 이미 다른 품목을 직접 입력해둔 경우에는 건드리지 않습니다.
-function syncBsItemSelection(presetSelector, itemSelector, priceSelector){
-  const preset = $(presetSelector);
-  const itemInput = $(itemSelector);
-  const priceInput = $(priceSelector);
-  if(!preset || !itemInput) return;
-
-  const current = itemInput.value.trim();
-  const isPresetItem = Array.from(preset.options).some(o => o.value === current && o.value !== 'custom');
-  if(current && !isPresetItem) return;
-
-  preset.value = BS_ITEM_NAME;
-  itemInput.value = BS_ITEM_NAME;
-  if(priceInput && Object.prototype.hasOwnProperty.call(ITEM_PRICE_MAP, BS_ITEM_NAME)){
-    priceInput.value = ITEM_PRICE_MAP[BS_ITEM_NAME];
-  }
-}
 
 function setAddFormMode(mode){
   addFormMode = mode === 'bs' ? 'bs' : 'normal';
@@ -3211,19 +3428,20 @@ function setAddFormMode(mode){
 }
 function clearAddForm(){
   $('#a-date').value=todayInputValue();
-   $('#a-item').value=''; $('#a-price').value=''; $('#a-client').value=''; $('#a-reason').value=''; $('#a-relation').value=''; if($('#a-docno')) $('#a-docno').value='';
-  $('#a-recipient').value=''; $('#a-message').value=DEFAULT_MESSAGE; $('#a-notice').value=''; $('#a-manager').value=state.user || ''; $('#a-status').value='pending'; $('#a-memo').value='';
+   $('#a-item').value=''; $('#a-price').value=''; $('#a-client').value=''; $('#a-reason').value=''; $('#a-relation').value='';
+  $('#a-recipient').value=''; $('#a-message').value=''; $('#a-notice').value=''; $('#a-manager').value=state.user || ''; $('#a-status').value='pending'; $('#a-memo').value='';
 
   if($('#bs-funeral')) $('#bs-funeral').value='';
   if($('#bs-recipient')) $('#bs-recipient').value='';
   if($('#bs-deceased')) $('#bs-deceased').value='';
-  if($('#bs-qty')) $('#bs-qty').value=DEFAULT_BS_QTY;
+  if($('#bs-qty')) $('#bs-qty').value='화환,근조기2개';
 
   setAddFormMode('normal');
 }
-function openAddModal(){ fillFilters(); clearAddForm(); $('#add-modal').classList.remove('hidden'); }
+function openAddModal(){ if(!requireEdit()) return; fillFilters(); clearAddForm(); $('#add-modal').classList.remove('hidden'); }
 
 function saveNewDelivery(){
+  if(!requireEdit()) return;
   
   const item = $('#a-item').value.trim();
   const reason = $('#a-reason').value.trim();
@@ -3267,10 +3485,9 @@ const row={
   price: num($('#a-price').value),
   client: $('#a-client').value.trim(),
   reason,
-  docNo: $('#a-docno')?.value.trim() || '',
   relation,
   recipient,
-  message: withDefaultMessage($('#a-message')?.value),
+  message: $('#a-message')?.value.trim() || '',
   notice: $('#a-notice')?.value.trim() || '',
   memo,
   manager: $('#a-manager').value.trim(),
@@ -3289,7 +3506,7 @@ const row={
 
 // ============================== 저장 기능 ==============================
 function exportRows(){
-  return state.data.map(r=>[r.id,r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)]);
+  return state.data.map(r=>[r.id,r.date,r.item,r.price,r.client,r.reason,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)]);
 }
 
 // 실제 엑셀(.xlsx) 생성을 위한 오프라인 저장 유틸
@@ -3458,8 +3675,8 @@ function saveWorkbookOffline(filename, sheets){
   downloadXlsx(filename, files);
 }
 function buildDeliveryRows(){
-  const header=['신청일','품목명','단가','거래처명','발송사유','발신 문서번호','관계(실적 등)','배송장소/수신자','문구','부고안내/청첩장','관리메모','담당자','상태'];
-  return [header, ...state.data.map(r=>[r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)])];
+  const header=['신청일','품목명','단가','거래처명','발송사유','관계(실적 등)','배송장소/수신자','문구','부고안내/청첩장','관리메모','담당자','상태'];
+  return [header, ...state.data.map(r=>[r.date,r.item,r.price,r.client,r.reason,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)])];
 }
 function buildLogRows(){
   const header=['시간','사용자','작업','대상ID','대상','변경 전','변경 후','사유'];
@@ -3559,6 +3776,7 @@ function exportLogXlsx(){
 
 
 function deleteCurrentDetail(){
+  if(!requireEdit()) return;
   const r=state.data.find(x=>x.id===currentDetailId); if(!r) return alert('삭제할 배송 건을 먼저 선택해주세요.');
   if(!confirm(`${targetName(r)}
 선택한 배송 건을 화면에서 삭제할까요?
@@ -3571,57 +3789,21 @@ function deleteCurrentDetail(){
 }
 
 // ============================== 이벤트 연결 ==============================
-$('#a-item-preset')?.addEventListener('change', ()=>{
-  applyItemPreset();
-  // 품목으로 BS_근조화환을 고르면 BS 양식으로, 다른 품목을 고르면 일반 양식으로 자동 전환합니다.
-  const picked = $('#a-item-preset').value;
-  if(picked === BS_ITEM_NAME) setAddFormMode('bs');
-  else if(picked && picked !== 'custom') setAddFormMode('normal');
-});
+$('#a-item-preset')?.addEventListener('change', applyItemPreset);
 $('#a-client-preset')?.addEventListener('change', applyClientPreset);
 $('#d-item-preset')?.addEventListener('change', ()=>{
   applyItemPresetTo('#d-item-preset', '#d-item', '#d-price');
-  const picked = $('#d-item-preset').value;
-  if(picked === BS_ITEM_NAME) setDetailFormMode('bs');
-  else if(picked && picked !== 'custom') setDetailFormMode('normal');
 });
 
 $('#d-client-preset')?.addEventListener('change', ()=>{
   applyClientPresetTo('#d-client-preset', '#d-client');
 });
 $('#add-normal-mode')?.addEventListener('click',()=>setAddFormMode('normal'));
-$('#add-bs-mode')?.addEventListener('click',()=>{
-  setAddFormMode('bs');
-  syncBsItemSelection('#a-item-preset', '#a-item', '#a-price');
-});
-$('#report-month')?.addEventListener('change', e => { reportMonth = e.target.value; renderReport(); });
-$('#report-prev')?.addEventListener('click', () => stepReportMonth(-1));
-$('#report-next')?.addEventListener('click', () => stepReportMonth(1));
-$('#report-export')?.addEventListener('click', exportReportXlsx);
-$('#report-print')?.addEventListener('click', () => window.print());
-$('#detail-normal-mode')?.addEventListener('click',()=>setDetailFormMode('normal'));
-$('#detail-bs-mode')?.addEventListener('click',()=>{
-  setDetailFormMode('bs');
-  syncBsItemSelection('#d-item-preset', '#d-item', '#d-price');
-});
+$('#add-bs-mode')?.addEventListener('click',()=>setAddFormMode('bs'));
 $('#login-form').addEventListener('submit', async e=>{
   e.preventDefault();
-
-  const acc = findAccount($('#login-id').value, $('#login-pw').value);
-  const errBox = $('#login-error');
-
-  if(!acc){
-    errBox?.classList.remove('hidden');
-    $('#login-pw').value = '';
-    $('#login-pw').focus();
-    return;
-  }
-  errBox?.classList.add('hidden');
-  $('#login-pw').value = '';
-
-  state.user = acc.id;
-  state.role = acc.role;
-  state.saveAs = acc.saveAs || acc.id;
+  state.user = $('#login-id').value.trim();
+  state.role = state.user === ADMIN_USER_NAME ? 'manager' : 'user';
   saveLoginSession();
   applyLoginView();
   applyRoleVisibility();
@@ -3631,11 +3813,11 @@ $('#logout').addEventListener('click',()=>{
   clearLoginSession();
   state.user = null;
   state.role = 'user';
-  document.body.classList.remove('role-manager','role-user');
+  document.body.classList.remove('role-manager','role-user','role-viewer');
   $('#app').classList.add('hidden');
   $('#login-screen').classList.remove('hidden');
 });
-$('#clear-session').addEventListener('click',()=>{ if(!confirm('현재 화면 데이터와 변경 이력을 모두 초기화할까요?')) return; state.data=[]; state.logs=[]; state.sourceFile=''; state.originalFileName=''; resetFilters(); renderAll(); });
+$('#clear-session').addEventListener('click',()=>{ if(!requireEdit()) return; if(!confirm('현재 화면 데이터와 변경 이력을 모두 초기화할까요?')) return; state.data=[]; state.logs=[]; state.sourceFile=''; state.originalFileName=''; resetFilters(); renderAll(); });
 $('#refresh-data').addEventListener('click',async ()=>{
   if(!confirm('서버의 최신 배송현황과 변경이력을 다시 불러올까요?\n저장하지 않은 화면 변경사항은 사라질 수 있습니다.')) return;
 
@@ -3732,11 +3914,30 @@ $('#kakao-resend').addEventListener('click', () => {
   if(r) openKakaoModal(r);
 });
 $$('.close-modal').forEach(b=>b.addEventListener('click',closeModals));
+
+/* v32: 경조사 지침 팝업 */
+$('#open-guide')?.addEventListener('click', ()=>{
+  $('#guide-modal').classList.remove('hidden');
+});
+$('#guide-modal')?.addEventListener('click', e=>{
+  if(e.target.id === 'guide-modal') closeModals();      /* 바깥 영역 클릭 시 닫기 */
+});
+$$('.guide-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    const view = tab.dataset.guideView;
+    $$('.guide-tab').forEach(t=>t.classList.toggle('active', t === tab));
+    $$('.guide-view').forEach(v=>v.classList.toggle('active', v.dataset.guidePanel === view));
+  });
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && !$('#guide-modal').classList.contains('hidden')) closeModals();
+});
 $$('.close-kakao-modal').forEach(b=>b.addEventListener('click',closeKakaoModal));
 $('#kakao-modal').addEventListener('click', e=>{ if(e.target.id === 'kakao-modal') return; });
 $('#copy-kakao-message').addEventListener('click', copyKakaoMessage);
 $('#send-kakao-share').addEventListener('click', sendKakaoShare);
 $('#save-detail').addEventListener('click',()=>{
+  if(!requireEdit()) return;
   const r=state.data.find(x=>x.id===currentDetailId);
   if(!r) return;
 
@@ -3749,9 +3950,6 @@ $('#save-detail').addEventListener('click',()=>{
   const beforePrice = num(r.price);
   const beforeClient = r.client || '';
   const beforeReason = r.reason || '';
-  const beforeFormType = r.formType === 'bs' ? 'bs' : 'normal';
-  const beforeDocNo = r.docNo || '';
-  const beforeRelation = r.relation || '';
   const beforeRecipient = r.recipient || '';
   const beforeMessage = r.message || '';
   const beforeNotice = r.notice || '';
@@ -3762,7 +3960,7 @@ $('#save-detail').addEventListener('click',()=>{
   const beforeBsHall = r.bsHall || '';
   const beforeBsReceiver = r.bsReceiver || '';
   const beforeBsDeceased = r.bsDeceased || '';
-  const beforeBsQty = r.bsQty || DEFAULT_BS_QTY;
+  const beforeBsQty = r.bsQty || '화환,근조기2개';
 
 
 
@@ -3772,10 +3970,8 @@ $('#save-detail').addEventListener('click',()=>{
   const afterPrice = num($('#d-price').value);
   const afterClient = $('#d-client').value.trim();
   const afterReasonText = $('#d-reason').value.trim();
-  const afterDocNo = $('#d-docno')?.value.trim() || '';
-  const afterRelation = $('#d-relation')?.value.trim() || '';
   const afterRecipient = $('#d-recipient').value.trim();
-  const afterMessage = withDefaultMessage($('#d-message').value);
+  const afterMessage = $('#d-message').value.trim();
   const afterNotice = $('#d-notice').value.trim();
   const afterStatusValue = $('#d-status').value;
   const afterStatus = statusLabel(afterStatusValue);
@@ -3784,32 +3980,14 @@ $('#save-detail').addEventListener('click',()=>{
   const afterBsHall = $('#d-bs-hall')?.value.trim() || '';
   const afterBsReceiver = $('#d-bs-receiver')?.value.trim() || '';
   const afterBsDeceased = $('#d-bs-deceased')?.value.trim() || '';
-  const afterBsQty = $('#d-bs-qty')?.value.trim() || DEFAULT_BS_QTY;
-  const afterFormType = detailFormMode === 'bs' ? 'bs' : 'normal';
-
-  // 양식을 바꾸는 경우에만 필수값을 확인합니다.
-  // 기존 건을 그냥 수정할 때는 예전처럼 검사하지 않습니다.
-  if(beforeFormType !== afterFormType){
-    if(afterFormType === 'bs'){
-      if(!afterBsHall) return alert('BS 양식으로 바꾸려면 빈소를 입력해주세요.');
-      if(!afterBsReceiver) return alert('BS 양식으로 바꾸려면 받는분(연락처)을 입력해주세요.');
-      if(!afterBsDeceased) return alert('BS 양식으로 바꾸려면 고인을 입력해주세요.');
-    }else if(!afterRecipient){
-      return alert('일반 양식으로 바꾸려면 배송장소/수신자를 입력해주세요.');
-    }
-  }
+  const afterBsQty = $('#d-bs-qty')?.value.trim() || '화환,근조기2개';
 
   // 변경 이력 기록
-  if(beforeFormType !== afterFormType){
-    addLog('양식 구분 변경', r.id, beforeTarget, beforeFormType === 'bs' ? 'BS 양식' : '일반 양식', afterFormType === 'bs' ? 'BS 양식' : '일반 양식', reason);
-  }
   if(beforeDate !== afterDate) addLog('신청일 수정', r.id, beforeTarget, beforeDate, afterDate, reason);
   if(beforeItem !== afterItem) addLog('품목명 수정', r.id, beforeTarget, beforeItem, afterItem, reason);
   if(beforePrice !== afterPrice) addLog('단가 수정', r.id, beforeTarget, money(beforePrice), money(afterPrice), reason);
   if(beforeClient !== afterClient) addLog('거래처 수정', r.id, beforeTarget, beforeClient, afterClient, reason);
   if(beforeReason !== afterReasonText) addLog('발송사유 수정', r.id, beforeTarget, beforeReason, afterReasonText, reason);
-  if(beforeDocNo !== afterDocNo) addLog('발신 문서번호 수정', r.id, beforeTarget, beforeDocNo, afterDocNo, reason);
-  if(afterFormType !== 'bs' && beforeRelation !== afterRelation) addLog('관계(실적 등) 수정', r.id, beforeTarget, beforeRelation, afterRelation, reason);
   if(beforeRecipient !== afterRecipient) addLog('배송장소/수신자 수정', r.id, beforeTarget, beforeRecipient, afterRecipient, reason);
   if(beforeMessage !== afterMessage) addLog('문구 수정', r.id, beforeTarget, beforeMessage, afterMessage, reason);
  if(beforeNotice !== afterNotice){ addLog(
@@ -3826,7 +4004,7 @@ $('#save-detail').addEventListener('click',()=>{
   if(beforeStatus !== afterStatus) addLog('상세 상태 변경', r.id, beforeTarget, beforeStatus, afterStatus, reason);
   if(beforeManager !== afterManager) addLog('담당자 변경', r.id, beforeTarget, beforeManager, afterManager, reason);
   if(beforeMemo !== afterMemo) addLog('관리메모 수정', r.id, beforeTarget, beforeMemo, afterMemo, reason);
-  if(afterFormType === 'bs'){
+  if(r.formType === 'bs'){
   if(beforeBsHall !== afterBsHall) addLog('BS 빈소 수정', r.id, beforeTarget, beforeBsHall, afterBsHall, reason);
   if(beforeBsReceiver !== afterBsReceiver) addLog('BS 받는분 수정', r.id, beforeTarget, beforeBsReceiver, afterBsReceiver, reason);
   if(beforeBsDeceased !== afterBsDeceased) addLog('BS 고인 수정', r.id, beforeTarget, beforeBsDeceased, afterBsDeceased, reason);
@@ -3839,9 +4017,7 @@ $('#save-detail').addEventListener('click',()=>{
   r.price = afterPrice;
   r.client = afterClient;
   r.reason = afterReasonText;
-  r.docNo = afterDocNo;
-  r.formType = afterFormType;
-if(afterFormType === 'bs'){
+if(r.formType === 'bs'){
   r.bsHall = afterBsHall;
   r.bsReceiver = afterBsReceiver;
   r.bsDeceased = afterBsDeceased;
@@ -3851,7 +4027,6 @@ if(afterFormType === 'bs'){
   r.relation = afterBsDeceased;
 }else{
   r.recipient = afterRecipient;
-  r.relation = afterRelation;
 }
   r.message = afterMessage;
   r.notice = afterNotice;
