@@ -3,7 +3,7 @@ import { put, get } from '@vercel/blob';
 const FILE_NAME = 'deliveries.json';
 
 // 저장(POST)은 관리자 계정에서만 허용합니다. 일반 이름으로 로그인한 사용자는 조회만 가능합니다.
-const ADMIN_USER_NAME = '전략구매팀';
+const ADMIN_USER_NAMES = ['전략구매팀', '관리자'];
 
 function setNoStoreHeaders(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
@@ -132,11 +132,11 @@ export default async function handler(req, res) {
       const lastSavedBy = String(body.lastSavedBy || body.user || '').trim();
       const expectedSaveVersion = String(body.expectedSaveVersion || '').trim();
 
-      if (lastSavedBy !== ADMIN_USER_NAME) {
+      if (!ADMIN_USER_NAMES.includes(lastSavedBy)) {
         return res.status(403).json({
           success: false,
           code: 'FORBIDDEN',
-          message: `조회 전용 계정입니다. 저장은 관리자(${ADMIN_USER_NAME}) 계정에서만 가능합니다.`
+          message: `조회 전용 계정입니다. 저장은 관리자(${ADMIN_USER_NAMES.join(' 또는 ')}) 계정에서만 가능합니다.`
         });
       }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>전략구매팀 화환 배송 관리 대시보드</title>
+  <title>화환 배송 관리 시스템 · FITI 전략구매팀</title>
   <script>
     // 로그인 유지 사용자가 새로고침할 때 로그인 화면이 잠깐 보이는 현상을 줄입니다.
     try{
@@ -1339,13 +1339,18 @@ padding-left:6px!important;
   .guide-table th,.guide-table td{ padding:6px 7px; }
   .guide-table td.col-target{ min-width:160px; }
 }
+  /* v27: 목록에 문서번호 / 부고안내·청첩장 열 추가 */
+  .notice-link{color:#1d4ed8;text-decoration:underline;word-break:break-all}
+  .notice-link:hover{color:#1e40af}
+  #tbody td:nth-child(8) .clip{max-width:220px;word-break:break-all}
+  #tbody td:nth-child(3) .clip{max-width:130px;white-space:normal}
   </style>
 </head>
 <body>
   <section id="login-screen" class="login">
     <div class="login-card">
       <span class="badge-top">v2.0 · 상단 그래프형 대시보드</span>
-      <h1>전략구매팀<br>화환 배송 관리 대시보드</h1>
+      <h1>전략구매팀<br>화환 배송 관리 시스템</h1>
       <p class="desc">로그인 후 <b>화환배송관리.xlsx</b> 파일을 불러와 배송상태, 담당자, 관리메모를 수정하고 다시 엑셀 파일로 저장합니다. 누가 무엇을 수정했는지는 변경 이력에 기록됩니다.</p>
      <form id="login-form" class="form">
   <div><label>사번 또는 이름</label><input id="login-id" required placeholder="예: 홍길동 또는 2026001"></div>
@@ -1356,8 +1361,8 @@ padding-left:6px!important;
 
   <section id="app" class="app hidden">
     <nav class="nav">
-      <div class="brand">화환 배송 관리 현황</div>
-      <div class="user"><span id="user-label"></span><span id="role-label" class="pill"></span><button id="open-guide" class="btn ghost small" type="button" title="휴가·휴직 업무처리지침 &lt;별표 2&gt; 직원 경조사 행정처리 안내표">📋 경조사 지침</button><button id="clear-session" class="btn ghost small edit-only">전체 초기화</button><button id="logout" class="btn ghost small">로그아웃</button></div>
+      <div class="brand">화환 배송 관리 시스템</div>
+      <div class="user"><a class="btn ghost small" href="https://procurement-portal-two.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a><span id="user-label"></span><span id="role-label" class="pill"></span><button id="open-guide" class="btn ghost small" type="button" title="휴가·휴직 업무처리지침 &lt;별표 2&gt; 직원 경조사 행정처리 안내표">📋 경조사 지침</button><button id="clear-session" class="btn ghost small edit-only">전체 초기화</button><button id="logout" class="btn ghost small">로그아웃</button></div>
     </nav>
     <main>
       <section class="hero-toolbar">
@@ -1435,7 +1440,7 @@ padding-left:6px!important;
         <div class="table-area">
           <section class="table-wrap">
             <table>
-              <thead><tr><th>No</th><th>신청일</th><th>품목명</th><th>단가</th><th>거래처/사유</th><th>배송장소/수신자</th><th>상태</th><th>관리메모</th></tr></thead>
+              <thead><tr><th>No</th><th>신청일</th><th>문서번호</th><th>품목명</th><th>단가</th><th>거래처/사유</th><th>배송장소/수신자</th><th>부고안내/청첩장</th><th>상태</th><th>관리메모</th></tr></thead>
               <tbody id="tbody"></tbody>
             </table>
           </section>
@@ -1450,6 +1455,14 @@ padding-left:6px!important;
           </div>
           <div id="sidebar-empty" class="sidebar-empty">선택된 배송 건이 없습니다.<br>목록의 행을 클릭해 상세 정보를 확인하세요.</div>
           <div id="sidebar-content" class="hidden">
+            <div class="sidebar-section">
+              <h3>양식 구분</h3>
+              <div class="full form-mode-tabs" id="detail-mode-tabs">
+                <button type="button" id="detail-normal-mode" class="btn small">일반 양식</button>
+                <button type="button" id="detail-bs-mode" class="btn ghost small">BS 양식</button>
+              </div>
+              <p class="hint">양식을 잘못 선택했다면 여기서 바꾼 뒤 [저장]을 눌러주세요.</p>
+            </div>
             <div class="sidebar-section">
               <h3>기본 정보 수정</h3>
               <div class="form">
@@ -1484,6 +1497,8 @@ padding-left:6px!important;
 
 <div><label>거래처</label><input id="d-client" placeholder="거래처 입력"></div>
 <div><label>발송사유</label><input id="d-reason" placeholder="예: 모친 부고"></div>
+<div><label>발신 문서번호</label><input id="d-docno" placeholder="예: 전략구매-2026-0123"></div>
+<div class="detail-general-only"><label>관계(실적 등)</label><input id="d-relation" placeholder="관계 또는 실적 내용"></div>
               </div>
             </div>
             <div id="bs-detail-fields" class="sidebar-section hidden">
@@ -1507,7 +1522,7 @@ padding-left:6px!important;
 
     <div>
       <label>수량</label>
-      <input id="d-bs-qty" placeholder="예: 화환,근조기2개">
+      <input id="d-bs-qty" placeholder="예: 화환,근조기2개,용품">
     </div>
   </div>
 </div>
@@ -1515,11 +1530,11 @@ padding-left:6px!important;
              <h3>배송장소 / 수신자 수정</h3>
               <textarea id="d-recipient" rows="6" placeholder="배송일, 시간, 배송장소, 수신자, 연락처 등을 입력"></textarea>
             </div>
-          <div class="sidebar-section detail-general-only">
+          <div class="sidebar-section">
             <h3>문구 수정</h3>
               <textarea id="d-message" rows="4" placeholder="리본 문구 또는 전달 문구 입력"></textarea>
             </div>
-             <div class="sidebar-section detail-general-only">
+             <div class="sidebar-section">
             <h3>부고안내 / 청첩장 수정</h3>
             <textarea id="d-notice" rows="4" placeholder="관련 안내 내용 입력"></textarea>
 </div>
@@ -1616,14 +1631,15 @@ padding-left:6px!important;
           <div><label>빈소</label><input id="bs-funeral" placeholder="예: 삼성서울병원 장례식장 1호실"></div>
           <div><label>받는분(연락처)</label><input id="bs-recipient" placeholder="예: 홍길동(010-0000-0000)"></div>
           <div><label>故고인</label><input id="bs-deceased" placeholder="예: 故 김OO 님"></div>
-         <input id="bs-qty" type="text" value="화환,근조기2개" placeholder="예: 화환,근조기2개">
+          <div><label>수량</label><input id="bs-qty" type="text" value="화환,근조기2개,용품" placeholder="예: 화환,근조기2개,용품"></div>
         </div>
       </div>
 
+      <div><label>발신 문서번호</label><input id="a-docno" placeholder="예: 전략구매-2026-0123"></div>
       <div class="general-only"><label>관계(실적 등)</label><input id="a-relation" placeholder="관계 또는 실적 내용"></div>
       <div class="full general-only"><label>배송장소/수신자</label><textarea id="a-recipient" rows="3" placeholder="배송장소와 수신자 입력"></textarea></div>
-      <div class="full general-only"><label>문구</label><textarea id="a-message" rows="3" placeholder="리본 문구 또는 전달 문구"></textarea></div>
-      <div class="full general-only"><label>부고안내/청첩장</label><textarea id="a-notice" rows="3" placeholder="관련 안내 내용 입력"></textarea></div>
+      <div class="full"><label>문구</label><textarea id="a-message" rows="3" placeholder="리본 문구 또는 전달 문구"></textarea></div>
+      <div class="full"><label>부고안내/청첩장</label><textarea id="a-notice" rows="3" placeholder="관련 안내 내용 입력"></textarea></div>
 
       <div class="full"><label>관리메모</label><textarea id="a-memo" rows="3" placeholder="관리메모 입력"></textarea></div>
       <div><label>담당자</label><input id="a-manager" placeholder="담당자 입력"></div>
@@ -2588,6 +2604,13 @@ function initKakaoShare(){
 // ============================== 유틸 함수 ==============================
 function nowText(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
 function escapeHtml(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function noticeCellHtml(v){
+  // 부고안내/청첩장은 링크만 붙여넣는 경우가 많아, 주소면 바로 열 수 있게 링크로 표시합니다.
+  const text = String(v ?? '').trim();
+  if(!text) return '-';
+  if(/^https?:\/\/[^\s]+$/i.test(text)) return `<a class="notice-link" href="${escapeHtml(text)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
+  return escapeHtml(text);
+}
 function num(v){ return Number(String(v ?? '').replace(/[^0-9.-]/g,'')) || 0; }
 function money(v){ return num(v).toLocaleString('ko-KR'); }
 function monthKey(v){
@@ -2775,6 +2798,7 @@ function mapRowsToData(rawRows){
     price: findCol(headers, ['단가','금액','가격','비용']),
     client: findCol(headers, ['거래처명','거래처','업체명','발주처']),
     reason: findCol(headers, ['발송사유','사유','구분','용도']),
+    docNo: findCol(headers, ['발신문서번호','문서번호','발신번호','공문번호']),
     relation: findCol(headers, ['관계']),
     recipient: findCol(headers, ['수신자및장소','배송장소수신자','배송장소','수신자','장소','주소']),
     message: findCol(headers, ['문구','리본문구','메시지']),
@@ -2791,6 +2815,7 @@ function mapRowsToData(rawRows){
     price: num(r[col.price]),
     client: String(r[col.client] ?? '').trim(),
     reason: String(r[col.reason] ?? '').trim(),
+    docNo: String(r[col.docNo] ?? '').trim(),
     relation: String(r[col.relation] ?? '').trim(),
     recipient: String(r[col.recipient] ?? '').trim(),
     message: String(r[col.message] ?? '').trim(),
@@ -2940,7 +2965,7 @@ function filteredData(){
   const noMap = buildDisplayNoMap();
 
   const result = state.data.filter(r => {
-    const text=[r.date,r.item,r.price,r.client,r.reason,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)].join(' ').toLowerCase();
+    const text=[r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)].join(' ').toLowerCase();
     return (!q || text.includes(q)) &&
       (st==='all'||r.status===st) &&
       (month==='all'||rowMonth(r)===month) &&
@@ -3209,7 +3234,12 @@ function renderTable(){
             <div class="mobile-card-label">담당자</div>
             <div class="mobile-card-value">${escapeHtml(r.manager||'-')}</div>
           </div>
+          <div class="mobile-card-field">
+            <div class="mobile-card-label">문서번호</div>
+            <div class="mobile-card-value">${escapeHtml(r.docNo||'-')}</div>
+          </div>
           ${recipientShort?`<div class="mobile-card-field full"><div class="mobile-card-label">배송장소/수신자</div><div class="mobile-card-value">${escapeHtml(recipientShort)}</div></div>`:''}
+          ${r.notice?`<div class="mobile-card-field full"><div class="mobile-card-label">부고안내/청첩장</div><div class="mobile-card-value">${noticeCellHtml(r.notice)}</div></div>`:''}
         </div>
         <div class="mobile-card-bottom">
           <select class="mobile-card-select" data-id="${r.id}" ${canEdit()?'':'disabled'}>
@@ -3220,6 +3250,7 @@ function renderTable(){
       </div>`;
     }).join('');
 
+    cardContainer.querySelectorAll('.notice-link').forEach(a=>a.addEventListener('click', e=>e.stopPropagation()));
     cardContainer.querySelectorAll('.mobile-card').forEach(card=>{
       card.addEventListener('click', ()=>openDetail(Number(card.dataset.id)));
     });
@@ -3248,14 +3279,15 @@ function renderTable(){
   const cardContainer = $('#mobile-card-list');
   if(cardContainer) cardContainer.style.display = 'none';
 
-  if(!state.data.length){ $('#tbody').innerHTML='<tr><td colspan="8" class="empty">아직 업로드된 데이터가 없습니다.<br>상단에서 화환배송관리.xlsx 파일을 불러와주세요.</td></tr>'; return; }
-  if(!data.length){ $('#tbody').innerHTML='<tr><td colspan="8" class="empty">현재 필터 조건에 맞는 데이터가 없습니다.<br>필터 초기화를 눌러 확인해보세요.</td></tr>'; return; }
+  if(!state.data.length){ $('#tbody').innerHTML='<tr><td colspan="10" class="empty">아직 업로드된 데이터가 없습니다.<br>상단에서 화환배송관리.xlsx 파일을 불러와주세요.</td></tr>'; return; }
+  if(!data.length){ $('#tbody').innerHTML='<tr><td colspan="10" class="empty">현재 필터 조건에 맞는 데이터가 없습니다.<br>필터 초기화를 눌러 확인해보세요.</td></tr>'; return; }
 $('#tbody').innerHTML=data.map(r=>{
   const no = displayNo(r, noMap);
 
   return `<tr class="data-row ${currentDetailId===r.id?'selected':''}" data-id="${r.id}">
     <td>${no}</td>
 <td>${escapeHtml(r.date)}</td>
+<td><div class="clip">${escapeHtml(r.docNo || '-')}</div></td>
 <td class="${r.formType === 'bs' ? 'bs-item-cell' : ''}">
   ${r.formType === 'bs' ? '<span class="bs-row-badge">BS</span>' : ''}
   <b>${escapeHtml(r.item)}</b>
@@ -3263,6 +3295,7 @@ $('#tbody').innerHTML=data.map(r=>{
 <td class="price">${money(r.price)}</td>
     <td><div class="clip"><b>${escapeHtml(r.client || '-')}</b><br><span class="muted">${escapeHtml(r.reason || '')}</span></div></td>
     <td><div class="clip">${escapeHtml(r.recipient)}</div></td>
+    <td><div class="clip">${noticeCellHtml(r.notice)}</div></td>
     <td><select class="row-status" data-id="${r.id}" ${canEdit()?'':'disabled'}>${STATUS_OPTIONS.map(s=>`<option value="${s.value}" ${s.value===r.status?'selected':''}>${s.label}</option>`).join('')}</select></td>
     <td><div class="clip">${escapeHtml(r.memo || '-')}</div></td>
   </tr>`;
@@ -3283,6 +3316,7 @@ $('#tbody').innerHTML=data.map(r=>{
       if(e.target.value === 'completed') openKakaoModal(row);
     });
   });
+  $$('.notice-link').forEach(a=>a.addEventListener('click', e=>e.stopPropagation()));
   $$('.data-row').forEach(tr=>tr.addEventListener('click',()=>openDetail(Number(tr.dataset.id))));
 }
 function renderLogs(){
@@ -3332,55 +3366,81 @@ if(r.formType === 'bs'){
   $('#d-reason').value=r.reason || '';
   $('#d-recipient').value=r.recipient || '';
   $('#kakao-resend-wrap').style.display = r.status === 'completed' ? 'block' : 'none';
-  $('#d-message').value=r.message || '';
+  // 문구가 비어 있으면 기본 문구를 실제 값으로 채워둡니다.
+  // (예시 글씨가 아니라 실제 값이라야 저장 및 카카오 안내문에 반영됩니다.)
+  $('#d-message').value=r.message || DEFAULT_MESSAGE;
   $('#d-notice').value=r.notice || '';
+  if($('#d-docno')) $('#d-docno').value = r.docNo || '';
+  if($('#d-relation')) $('#d-relation').value = r.relation || '';
 
-  const isBs = r.formType === 'bs';
-
-$('#bs-detail-fields')?.classList.toggle('hidden', !isBs);
-$$('.detail-general-only').forEach(el=>el.classList.toggle('hidden', isBs));
-
-if(isBs){
+  // BS 관련 입력값은 양식과 상관없이 먼저 채워둡니다.
+  // 그래야 일반 <-> BS 를 오갈 때 이전에 입력한 내용이 남아 있습니다.
   $('#d-bs-hall').value = r.bsHall || '';
   $('#d-bs-receiver').value = r.bsReceiver || '';
   $('#d-bs-deceased').value = r.bsDeceased || '';
-  $('#d-bs-qty').value = r.bsQty || '화환,근조기2개';
-}
+  $('#d-bs-qty').value = r.bsQty || DEFAULT_BS_QTY;
+
+  setDetailFormMode(r.formType === 'bs' ? 'bs' : 'normal');
   $('#d-status').value=r.status; $('#d-manager').value=r.manager||''; $('#d-memo').value=r.memo||''; $('#d-reason-change').value='';
   const logs=state.logs.filter(l=>l.rowId===id);
   $('#detail-log-body').innerHTML=logs.length ? logs.map(l=>`<tr class="${isDeletedLog(l) ? 'log-deleted' : ''}"><td>${escapeHtml(l.time)}</td><td>${logActionHtml(l)}</td><td>${escapeHtml(l.before)}</td><td>${escapeHtml(l.after)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">해당 건 변경 이력이 없습니다.</td></tr>';
   applyRoleVisibility();
   renderTable();
 }
+let detailFormMode = 'normal';
+
+function setDetailFormMode(mode){
+  detailFormMode = mode === 'bs' ? 'bs' : 'normal';
+  const isBs = detailFormMode === 'bs';
+
+  $('#bs-detail-fields')?.classList.toggle('hidden', !isBs);
+  $$('.detail-general-only').forEach(el=>el.classList.toggle('hidden', isBs));
+
+  const normalBtn = $('#detail-normal-mode');
+  const bsBtn = $('#detail-bs-mode');
+  if(normalBtn && bsBtn){
+    normalBtn.classList.toggle('ghost', isBs);
+    bsBtn.classList.toggle('ghost', !isBs);
+  }
+}
+
 function closeDetailSidebar(){ currentDetailId=null; $('#sidebar-content')?.classList.add('hidden'); $('#sidebar-empty')?.classList.remove('hidden'); $('#detail-sub').textContent='왼쪽 목록에서 행을 클릭하면 상세 정보가 표시됩니다.'; renderTable(); }
 function closeModals(){ $$('.modal-bg').forEach(m=>m.classList.add('hidden')); }
 
 function buildKakaoCompleteMessage(row){
   if(row.formType === 'bs'){
-    return [
+    const bsSections = [
       '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
       '안녕하세요, 아래 BS 화환배송건을 요청합니다.',
       [
+        `■ 발신 문서번호: ${row.docNo || '-'}`,
         `■ 빈소: ${row.bsHall || '-'}`,
         `■ 받는분(연락처): ${row.bsReceiver || '-'}`,
         `■ 고인: ${row.bsDeceased || '-'}`,
-        `■ 수량: ${row.bsQty || '화환,근조기2개'}`
+        `■ 수량: ${row.bsQty || DEFAULT_BS_QTY}`
       ].join('\n'),
-      '감사합니다.'
-    ].join('\n\n');
+      `문구:\n${row.message || DEFAULT_MESSAGE}`
+    ];
+
+    if(row.notice) bsSections.push(`부고안내/청첩장:\n${row.notice}`);
+
+    bsSections.push('감사합니다.');
+    return bsSections.join('\n\n');
   }
 
   const sections = [
     '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
     '안녕하세요, 아래 화환배송건을 요청합니다.',
     [
+      `발신 문서번호: ${row.docNo || '-'}`,
       `신청일: ${row.date || '-'}`,
       `품목명: ${row.item || '-'}`,
       `거래처/발송사유: ${row.client || row.reason || '-'}`,
+      `관계(실적 등): ${row.relation || '-'}`,
       '배송장소/수신자:',
       row.recipient || '-'
     ].join('\n'),
-    `문구:\n${row.message || '-'}`
+    `문구:\n${row.message || DEFAULT_MESSAGE}`
   ];
 
   if(row.notice) sections.push(`부고안내/청첩장:\n${row.notice}`);
@@ -3453,6 +3513,33 @@ function todayInputValue(){ const d=new Date(); const p=n=>String(n).padStart(2,
 function nextRowId(){ return state.data.length ? Math.max(...state.data.map(r=>Number(r.id)||0)) + 1 : 1; }
 let addFormMode = 'normal';
 
+const BS_ITEM_NAME = 'BS_근조화환';
+
+// 신규 등록 시 문구 기본값. 필요하면 등록창에서 그대로 고쳐 쓸 수 있습니다.
+const DEFAULT_MESSAGE = '(재)FITI 시험연구원 원장 윤주경';
+
+// BS 양식 수량 기본값
+const DEFAULT_BS_QTY = '화환,근조기2개,용품';
+
+// [BS 양식] 버튼을 눌렀을 때 품목도 BS_근조화환으로 맞춰줍니다.
+// 이미 다른 품목을 직접 입력해둔 경우에는 건드리지 않습니다.
+function syncBsItemSelection(presetSelector, itemSelector, priceSelector){
+  const preset = $(presetSelector);
+  const itemInput = $(itemSelector);
+  const priceInput = $(priceSelector);
+  if(!preset || !itemInput) return;
+
+  const current = itemInput.value.trim();
+  const isPresetItem = Array.from(preset.options).some(o => o.value === current && o.value !== 'custom');
+  if(current && !isPresetItem) return;
+
+  preset.value = BS_ITEM_NAME;
+  itemInput.value = BS_ITEM_NAME;
+  if(priceInput && Object.prototype.hasOwnProperty.call(ITEM_PRICE_MAP, BS_ITEM_NAME)){
+    priceInput.value = ITEM_PRICE_MAP[BS_ITEM_NAME];
+  }
+}
+
 function setAddFormMode(mode){
   addFormMode = mode === 'bs' ? 'bs' : 'normal';
 
@@ -3489,13 +3576,13 @@ function setAddFormMode(mode){
 }
 function clearAddForm(){
   $('#a-date').value=todayInputValue();
-   $('#a-item').value=''; $('#a-price').value=''; $('#a-client').value=''; $('#a-reason').value=''; $('#a-relation').value='';
-  $('#a-recipient').value=''; $('#a-message').value=''; $('#a-notice').value=''; $('#a-manager').value=state.user || ''; $('#a-status').value='pending'; $('#a-memo').value='';
+   $('#a-item').value=''; $('#a-price').value=''; $('#a-client').value=''; $('#a-reason').value=''; $('#a-relation').value=''; if($('#a-docno')) $('#a-docno').value='';
+  $('#a-recipient').value=''; $('#a-message').value=DEFAULT_MESSAGE; $('#a-notice').value=''; $('#a-manager').value=state.user || ''; $('#a-status').value='pending'; $('#a-memo').value='';
 
   if($('#bs-funeral')) $('#bs-funeral').value='';
   if($('#bs-recipient')) $('#bs-recipient').value='';
   if($('#bs-deceased')) $('#bs-deceased').value='';
-  if($('#bs-qty')) $('#bs-qty').value='화환,근조기2개';
+  if($('#bs-qty')) $('#bs-qty').value=DEFAULT_BS_QTY;
 
   setAddFormMode('normal');
 }
@@ -3546,6 +3633,7 @@ const row={
   price: num($('#a-price').value),
   client: $('#a-client').value.trim(),
   reason,
+  docNo: $('#a-docno')?.value.trim() || '',
   relation,
   recipient,
   message: $('#a-message')?.value.trim() || '',
@@ -3567,7 +3655,7 @@ const row={
 
 // ============================== 저장 기능 ==============================
 function exportRows(){
-  return state.data.map(r=>[r.id,r.date,r.item,r.price,r.client,r.reason,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)]);
+  return state.data.map(r=>[r.id,r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)]);
 }
 
 // 실제 엑셀(.xlsx) 생성을 위한 오프라인 저장 유틸
@@ -3736,8 +3824,8 @@ function saveWorkbookOffline(filename, sheets){
   downloadXlsx(filename, files);
 }
 function buildDeliveryRows(){
-  const header=['신청일','품목명','단가','거래처명','발송사유','관계(실적 등)','배송장소/수신자','문구','부고안내/청첩장','관리메모','담당자','상태'];
-  return [header, ...state.data.map(r=>[r.date,r.item,r.price,r.client,r.reason,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)])];
+  const header=['신청일','품목명','단가','거래처명','발송사유','발신 문서번호','관계(실적 등)','배송장소/수신자','문구','부고안내/청첩장','관리메모','담당자','상태'];
+  return [header, ...state.data.map(r=>[r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)])];
 }
 function buildLogRows(){
   const header=['시간','사용자','작업','대상ID','대상','변경 전','변경 후','사유'];
@@ -3786,10 +3874,15 @@ function exportDeliveryXlsx(){
   const fileName = state.originalFileName || state.sourceFile || '화환배송관리.xlsx';
 
   const ok = confirm(
-    `${fileName} 파일을 저장합니다.
+    `✅ 서버 저장은 이미 완료되었습니다.
 
 ` +
-    `파일 다운로드를 원할 시에는  '확인'  , 원치 않을 시 '취소'를 눌러주세요
+    `엑셀 파일(${fileName})도 내려받으시겠습니까?
+
+` +
+    `[확인] 엑셀 다운로드
+` +
+    `[취소] 다운로드만 안 함 — 서버에 저장된 내용은 그대로 유지됩니다
 `
   );
 
@@ -3850,17 +3943,34 @@ function deleteCurrentDetail(){
 }
 
 // ============================== 이벤트 연결 ==============================
-$('#a-item-preset')?.addEventListener('change', applyItemPreset);
+$('#a-item-preset')?.addEventListener('change', ()=>{
+  applyItemPreset();
+  // 품목으로 BS_근조화환을 고르면 BS 양식으로, 다른 품목을 고르면 일반 양식으로 자동 전환합니다.
+  const picked = $('#a-item-preset').value;
+  if(picked === BS_ITEM_NAME) setAddFormMode('bs');
+  else if(picked && picked !== 'custom') setAddFormMode('normal');
+});
 $('#a-client-preset')?.addEventListener('change', applyClientPreset);
 $('#d-item-preset')?.addEventListener('change', ()=>{
   applyItemPresetTo('#d-item-preset', '#d-item', '#d-price');
+  const picked = $('#d-item-preset').value;
+  if(picked === BS_ITEM_NAME) setDetailFormMode('bs');
+  else if(picked && picked !== 'custom') setDetailFormMode('normal');
 });
 
 $('#d-client-preset')?.addEventListener('change', ()=>{
   applyClientPresetTo('#d-client-preset', '#d-client');
 });
 $('#add-normal-mode')?.addEventListener('click',()=>setAddFormMode('normal'));
-$('#add-bs-mode')?.addEventListener('click',()=>setAddFormMode('bs'));
+$('#add-bs-mode')?.addEventListener('click',()=>{
+  setAddFormMode('bs');
+  syncBsItemSelection('#a-item-preset', '#a-item', '#a-price');
+});
+$('#detail-normal-mode')?.addEventListener('click',()=>setDetailFormMode('normal'));
+$('#detail-bs-mode')?.addEventListener('click',()=>{
+  setDetailFormMode('bs');
+  syncBsItemSelection('#d-item-preset', '#d-item', '#d-price');
+});
 $('#login-form').addEventListener('submit', async e=>{
   e.preventDefault();
   state.user = $('#login-id').value.trim();
@@ -4011,6 +4121,9 @@ $('#save-detail').addEventListener('click',()=>{
   const beforePrice = num(r.price);
   const beforeClient = r.client || '';
   const beforeReason = r.reason || '';
+  const beforeFormType = r.formType === 'bs' ? 'bs' : 'normal';
+  const beforeDocNo = r.docNo || '';
+  const beforeRelation = r.relation || '';
   const beforeRecipient = r.recipient || '';
   const beforeMessage = r.message || '';
   const beforeNotice = r.notice || '';
@@ -4021,7 +4134,7 @@ $('#save-detail').addEventListener('click',()=>{
   const beforeBsHall = r.bsHall || '';
   const beforeBsReceiver = r.bsReceiver || '';
   const beforeBsDeceased = r.bsDeceased || '';
-  const beforeBsQty = r.bsQty || '화환,근조기2개';
+  const beforeBsQty = r.bsQty || DEFAULT_BS_QTY;
 
 
 
@@ -4031,6 +4144,8 @@ $('#save-detail').addEventListener('click',()=>{
   const afterPrice = num($('#d-price').value);
   const afterClient = $('#d-client').value.trim();
   const afterReasonText = $('#d-reason').value.trim();
+  const afterDocNo = $('#d-docno')?.value.trim() || '';
+  const afterRelation = $('#d-relation')?.value.trim() || '';
   const afterRecipient = $('#d-recipient').value.trim();
   const afterMessage = $('#d-message').value.trim();
   const afterNotice = $('#d-notice').value.trim();
@@ -4041,14 +4156,32 @@ $('#save-detail').addEventListener('click',()=>{
   const afterBsHall = $('#d-bs-hall')?.value.trim() || '';
   const afterBsReceiver = $('#d-bs-receiver')?.value.trim() || '';
   const afterBsDeceased = $('#d-bs-deceased')?.value.trim() || '';
-  const afterBsQty = $('#d-bs-qty')?.value.trim() || '화환,근조기2개';
+  const afterBsQty = $('#d-bs-qty')?.value.trim() || DEFAULT_BS_QTY;
+  const afterFormType = detailFormMode === 'bs' ? 'bs' : 'normal';
+
+  // 양식을 바꾸는 경우에만 필수값을 확인합니다.
+  // 기존 건을 그냥 수정할 때는 예전처럼 검사하지 않습니다.
+  if(beforeFormType !== afterFormType){
+    if(afterFormType === 'bs'){
+      if(!afterBsHall) return alert('BS 양식으로 바꾸려면 빈소를 입력해주세요.');
+      if(!afterBsReceiver) return alert('BS 양식으로 바꾸려면 받는분(연락처)을 입력해주세요.');
+      if(!afterBsDeceased) return alert('BS 양식으로 바꾸려면 고인을 입력해주세요.');
+    }else if(!afterRecipient){
+      return alert('일반 양식으로 바꾸려면 배송장소/수신자를 입력해주세요.');
+    }
+  }
 
   // 변경 이력 기록
+  if(beforeFormType !== afterFormType){
+    addLog('양식 구분 변경', r.id, beforeTarget, beforeFormType === 'bs' ? 'BS 양식' : '일반 양식', afterFormType === 'bs' ? 'BS 양식' : '일반 양식', reason);
+  }
   if(beforeDate !== afterDate) addLog('신청일 수정', r.id, beforeTarget, beforeDate, afterDate, reason);
   if(beforeItem !== afterItem) addLog('품목명 수정', r.id, beforeTarget, beforeItem, afterItem, reason);
   if(beforePrice !== afterPrice) addLog('단가 수정', r.id, beforeTarget, money(beforePrice), money(afterPrice), reason);
   if(beforeClient !== afterClient) addLog('거래처 수정', r.id, beforeTarget, beforeClient, afterClient, reason);
   if(beforeReason !== afterReasonText) addLog('발송사유 수정', r.id, beforeTarget, beforeReason, afterReasonText, reason);
+  if(beforeDocNo !== afterDocNo) addLog('발신 문서번호 수정', r.id, beforeTarget, beforeDocNo, afterDocNo, reason);
+  if(afterFormType !== 'bs' && beforeRelation !== afterRelation) addLog('관계(실적 등) 수정', r.id, beforeTarget, beforeRelation, afterRelation, reason);
   if(beforeRecipient !== afterRecipient) addLog('배송장소/수신자 수정', r.id, beforeTarget, beforeRecipient, afterRecipient, reason);
   if(beforeMessage !== afterMessage) addLog('문구 수정', r.id, beforeTarget, beforeMessage, afterMessage, reason);
  if(beforeNotice !== afterNotice){ addLog(
@@ -4065,7 +4198,7 @@ $('#save-detail').addEventListener('click',()=>{
   if(beforeStatus !== afterStatus) addLog('상세 상태 변경', r.id, beforeTarget, beforeStatus, afterStatus, reason);
   if(beforeManager !== afterManager) addLog('담당자 변경', r.id, beforeTarget, beforeManager, afterManager, reason);
   if(beforeMemo !== afterMemo) addLog('관리메모 수정', r.id, beforeTarget, beforeMemo, afterMemo, reason);
-  if(r.formType === 'bs'){
+  if(afterFormType === 'bs'){
   if(beforeBsHall !== afterBsHall) addLog('BS 빈소 수정', r.id, beforeTarget, beforeBsHall, afterBsHall, reason);
   if(beforeBsReceiver !== afterBsReceiver) addLog('BS 받는분 수정', r.id, beforeTarget, beforeBsReceiver, afterBsReceiver, reason);
   if(beforeBsDeceased !== afterBsDeceased) addLog('BS 고인 수정', r.id, beforeTarget, beforeBsDeceased, afterBsDeceased, reason);
@@ -4078,7 +4211,9 @@ $('#save-detail').addEventListener('click',()=>{
   r.price = afterPrice;
   r.client = afterClient;
   r.reason = afterReasonText;
-if(r.formType === 'bs'){
+  r.docNo = afterDocNo;
+  r.formType = afterFormType;
+if(afterFormType === 'bs'){
   r.bsHall = afterBsHall;
   r.bsReceiver = afterBsReceiver;
   r.bsDeceased = afterBsDeceased;
@@ -4088,6 +4223,7 @@ if(r.formType === 'bs'){
   r.relation = afterBsDeceased;
 }else{
   r.recipient = afterRecipient;
+  r.relation = afterRelation;
 }
   r.message = afterMessage;
   r.notice = afterNotice;
