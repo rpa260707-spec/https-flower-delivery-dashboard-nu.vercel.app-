@@ -47,7 +47,7 @@
     .brand-sub{font-size:11px;font-weight:600;color:#8a93a6;letter-spacing:.01em;margin-top:3px;white-space:nowrap}
     @media(max-width:640px){.brand-sub{display:none}}
     main{max-width:1720px;padding:22px 26px}.hero-toolbar{background:#fff;border:1px solid #dbe5f2;border-radius:20px;padding:16px 18px;margin-bottom:16px;display:flex;justify-content:space-between;gap:18px;align-items:center;box-shadow:0 10px 28px rgba(15,23,42,.07)}
-    .hero-title{font-size:22px;font-weight:950;color:#0f172a;line-height:1.35}.hero-sub{font-size:12px;color:#64748b;margin-top:4px}.hero-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.file-input-wrap{display:flex;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:8px}.file-input-wrap input{max-width:310px;border:0;background:transparent;padding:5px 2px}.source-chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:7px 10px;font-size:12px;color:#334155;font-weight:800;max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hero-title{font-size:22px;font-weight:950;color:#0f172a;line-height:1.35}.hero-sub{font-size:12px;color:#64748b;margin-top:4px}.hero-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.file-input-wrap{display:flex;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:8px}.file-input-wrap input{max-width:310px;border:0;background:transparent;padding:5px 2px}.source-chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:7px 10px;font-size:12px;color:#334155;font-weight:800;max-width:100%;white-space:normal;line-height:1.5}
     .notice{display:none}.grid2{display:none}.kpis{grid-template-columns:repeat(5,minmax(170px,1fr));gap:16px}.card{position:relative;border:1px solid #dbe5f2;border-left:0;border-radius:18px;padding:18px 18px 18px 20px;min-height:108px;overflow:hidden}.card::after{content:'';position:absolute;right:18px;top:30px;width:46px;height:46px;border-radius:16px;background:#eef2ff}.card:nth-child(1)::after{background:#dbeafe}.card:nth-child(2)::after{background:#ecfdf5}.card:nth-child(3)::after{background:#eff6ff}.card:nth-child(4)::after{background:#fff7ed}.card:nth-child(5)::after{background:#f5f3ff}.card:nth-child(6){display:none}.card-title{font-size:13px;color:#334155}.card-value{font-size:27px;letter-spacing:-.04em}.card:nth-child(1)::before{content:'전체 등록 화환';position:absolute;left:20px;bottom:15px;font-size:12px;color:#94a3b8}.card:nth-child(2)::before{content:'현재 목록 기준 합계';position:absolute;left:20px;bottom:15px;font-size:12px;color:#94a3b8}.card:nth-child(3)::before{content:'진행 중인 건';position:absolute;left:20px;bottom:15px;font-size:12px;color:#94a3b8}.card:nth-child(4)::before{content:'완료 처리된 건';position:absolute;left:20px;bottom:15px;font-size:12px;color:#94a3b8}.card:nth-child(5)::before{content:'미처리/준비 단계';position:absolute;left:20px;bottom:15px;font-size:12px;color:#94a3b8}
     .controls{grid-template-columns:minmax(260px,1.55fr) repeat(7,minmax(130px,1fr)) auto;background:#fff;border:1px solid #dbe5f2;border-radius:20px;padding:16px;box-shadow:0 10px 24px rgba(15,23,42,.06)}.panel[style*="margin-bottom"]{padding:0;border:0;background:transparent;box-shadow:none}.panel[style*="margin-bottom"] .controls{margin-bottom:0}.controls label{font-size:12px;color:#475569}.controls input,.controls select{border-color:#dbe5f2;border-radius:13px;min-height:45px}.controls .btn{min-height:45px;border-radius:13px}
     .workspace{grid-template-columns:minmax(0,1fr) 420px;gap:18px}.table-wrap{border-radius:20px;border-color:#d4deec;box-shadow:0 12px 32px rgba(15,23,42,.07)}table{border-collapse:separate;border-spacing:0}th{background:#eef4ff;color:#0f172a;border-bottom:2px solid #bfdbfe;height:46px}td{background:#fff;border-bottom:1px solid #e2e8f0;border-right:1px solid #edf2f7;padding:14px 13px}tbody tr:nth-child(even) td{background:#fbfdff}.data-row:hover td{background:#f0f7ff!important}.data-row.selected td{background:#dbeafe!important;box-shadow:none!important}.clip{max-width:360px}.row-status{border-radius:13px;padding:8px 10px;background:#fff}
@@ -560,10 +560,14 @@
         max-width:100%!important;
       }
 
+      /* 저장 일시가 「2026-09-2…」 로 잘려 몇 시에 저장했는지가 안 보였습니다.
+         칩 한 줄에 가두지 말고 두 줄로 흐르게 둡니다 — 잘리는 것보다 낫습니다. */
       .source-chip{
         max-width:100%!important;
-        overflow:hidden!important;
-        text-overflow:ellipsis!important;
+        white-space:normal!important;
+        overflow:visible!important;
+        text-overflow:clip!important;
+        line-height:1.5;
       }
 
       .kpis{
@@ -1401,6 +1405,7 @@ padding-left:6px!important;
       <p class="desc">로그인 후 <b>화환배송관리.xlsx</b> 파일을 불러와 배송상태, 담당자, 관리메모를 수정하고 다시 엑셀 파일로 저장합니다. 누가 무엇을 수정했는지는 변경 이력에 기록됩니다.</p>
      <form id="login-form" class="form">
   <div><label>사번 또는 이름</label><input id="login-id" required placeholder="예: 홍길동 또는 2026001"></div>
+  <div><label>접속 비밀번호</label><input id="login-pw" type="password" required placeholder="전략구매팀에서 받은 번호" autocomplete="current-password"></div>
   <button class="btn" type="submit">로그인</button>
 </form>
     </div>
@@ -1414,7 +1419,7 @@ padding-left:6px!important;
           <span class="brand-sub">사업지원본부 · 전략구매팀 · v1.1</span>
         </span>
       </div>
-      <div class="user"><a class="btn ghost small" href="https://fiti-procurement-portal.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a><span id="user-label"></span><span id="role-label" class="pill"></span><button id="open-guide" class="btn ghost small" type="button" title="휴가·휴직 업무처리지침 · 경조사 행정처리 안내표 · 예산 지침 등 관련 문서">📋 지침 · 문서</button><button id="clear-session" class="btn ghost small edit-only">전체 초기화</button><button id="logout" class="btn ghost small">로그아웃</button></div>
+      <div class="user"><a class="btn ghost small" href="https://fiti-procurement-portal.vercel.app/" title="전략구매팀 업무포털로 이동">← 업무포털</a><span id="user-label"></span><span id="role-label" class="pill"></span><button id="open-guide" class="btn ghost small" type="button" title="휴가·휴직 업무처리지침 · 경조사 행정처리 안내표 · 예산 지침 등 관련 문서">📋 지침 · 문서</button><a class="btn ghost small" href="https://www.bscall.co.kr/delivery/list" target="_blank" rel="noopener noreferrer" title="(주)비에스 기업장례종합서비스 — 회원사 전용. BS 근조화환 접수처입니다">BS 접수 ↗</a><button id="clear-session" class="btn ghost small edit-only">전체 초기화</button><button id="logout" class="btn ghost small">로그아웃</button></div>
     </nav>
     <main>
       <section class="hero-toolbar">
@@ -1585,6 +1590,11 @@ padding-left:6px!important;
       <label>수량</label>
       <input id="d-bs-qty" placeholder="예: 화환,근조기2개,용품">
     </div>
+      <div><label>대상자 성명</label><input id="d-bs-target-name" placeholder="부고를 낸 임직원"></div>
+      <div><label>대상자 연락처</label><input id="d-bs-target-phone" placeholder="대상자 연락처"></div>
+      <div><label>소속부서</label><input id="d-bs-target-dept" placeholder="소속부서"></div>
+      <div><label>직책</label><input id="d-bs-target-title" placeholder="직책"></div>
+      <div><label>사원번호</label><input id="d-bs-target-empno" placeholder="사원번호"></div>
   </div>
 </div>
             <div class="sidebar-section detail-general-only">
@@ -1608,6 +1618,13 @@ padding-left:6px!important;
       <div><label>변경 사유(선택)</label><input id="d-reason-change" placeholder="예: 업체 배송 요청 확인, 담당자 확인 요청 등"></div>
               </div>
               <div class="sidebar-actions edit-only"><button id="delete-detail" class="btn red" type="button">삭제</button><button id="save-detail" class="btn" type="button">저장</button></div>
+            </div>
+            <!-- BS 건만 보입니다. 접수에 필요한 값을 클립보드로 복사해,
+                 bscall 접수 화면에서 북마클릿으로 붙여 넣습니다.
+                 주소(URL)에 싣지 않는 이유 — 개인정보가 브라우저 기록에 남습니다. -->
+            <div id="bs-copy-wrap" style="margin-top:10px;display:none">
+              <button id="bs-copy" class="btn ghost small" type="button"
+                      title="BS 접수 화면에 붙여 넣을 값을 복사합니다">BS 접수서 복사</button>
             </div>
             <div id="kakao-resend-wrap" style="margin-top:10px;display:none">
   <button id="kakao-resend" ...>📨 카카오 배송 안내 다시 보내기</button>
@@ -1718,6 +1735,11 @@ padding-left:6px!important;
           <div><label>받는분(연락처)</label><input id="bs-recipient" placeholder="예: 홍길동(010-0000-0000)"></div>
           <div><label>故고인</label><input id="bs-deceased" placeholder="예: 故 김OO 님"></div>
           <div><label>수량</label><input id="bs-qty" type="text" value="화환,근조기2개,용품" placeholder="예: 화환,근조기2개,용품"></div>
+          <div><label>대상자 성명</label><input id="bs-target-name" placeholder="예: 홍길동 (부고를 낸 임직원)"></div>
+          <div><label>대상자 연락처</label><input id="bs-target-phone" placeholder="예: 010-0000-0000"></div>
+          <div><label>소속부서</label><input id="bs-target-dept" placeholder="예: 전략구매팀"></div>
+          <div><label>직책</label><input id="bs-target-title" placeholder="예: 팀장"></div>
+          <div><label>사원번호</label><input id="bs-target-empno" placeholder="예: 20231234"></div>
         </div>
       </div>
 
@@ -2208,6 +2230,12 @@ const KAKAO_JS_KEY = 'dc0db1104b718d0c877a647e543e5d93';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const LOGIN_STORAGE_KEY = 'flowerDeliveryLoginUser';
+/* 접속 비밀번호 — 전략구매팀이 안내하는 공용 번호입니다.
+   바꾸시려면 아래 한 줄만 고치면 됩니다.
+   ❗ 화면 소스에 그대로 보이므로 「아무나 들어오지 못하게」 하는 정도이지,
+      데이터를 지키는 수단이 아닙니다. 자세한 것은 로그인 화면 아래 설명 참고. */
+const ACCESS_CODE = '8124';
+
 const ADMIN_USER_NAMES = ['전략구매팀', '관리자'];
 const ADMIN_USER_NAME = ADMIN_USER_NAMES[0];
 function isAdminName(n){ return ADMIN_USER_NAMES.includes(String(n || '').trim()); }
@@ -2892,6 +2920,10 @@ function mapRowsToData(rawRows){
     reason: findCol(headers, ['발송사유','사유','구분','용도']),
     docNo: findCol(headers, ['발신문서번호','문서번호','발신번호','공문번호']),
     relation: findCol(headers, ['관계']),
+    // 배송일 전용 칸. 있으면 이걸 먼저 씁니다 — 글에서 날짜를 긁는 것보다 확실합니다.
+    // 엑셀에 이 칸이 없어도 그대로 열립니다(없으면 예전처럼 글에서 찾습니다).
+    deliveryDate: findCol(headers, ['배송일','배송일자','배송예정일','납품일','납품일자','행사일','행사일자']),
+    deliveryTime: findCol(headers, ['배송시간','시간','배송시각']),
     recipient: findCol(headers, ['수신자및장소','배송장소수신자','배송장소','수신자','장소','주소']),
     message: findCol(headers, ['문구','리본문구','메시지']),
     notice: findCol(headers, ['부고안내','청첩장','안내','비고사항']),
@@ -2909,6 +2941,10 @@ function mapRowsToData(rawRows){
     reason: String(r[col.reason] ?? '').trim(),
     docNo: String(r[col.docNo] ?? '').trim(),
     relation: String(r[col.relation] ?? '').trim(),
+    // 엑셀에 배송일 칸이 있으면 그 값을 담습니다. 없으면 빈 값이고,
+    // 그때는 예전처럼 「수신자및장소」 글에서 날짜를 찾습니다.
+    deliveryDate: excelSerialToDate(r[col.deliveryDate]),
+    deliveryTime: String(r[col.deliveryTime] ?? '').trim(),
     recipient: String(r[col.recipient] ?? '').trim(),
     message: String(r[col.message] ?? '').trim(),
     notice: String(r[col.notice] ?? '').trim(),
@@ -3144,6 +3180,19 @@ function monthlyAmountEntries(){
 // 엑셀에 배송일 컬럼이 따로 없어서, 「수신자및장소」 칸 글에서 날짜를 찾아냅니다.
 // (못 찾은 건은 버리지 않고 몇 건인지 패널에 적어 둡니다.)
 function parseDeliverySchedule(r){
+  // 엑셀에 배송일 칸이 있으면 그걸 씁니다. 글에서 긁는 것보다 확실합니다.
+  if(r.deliveryDate && /^\d{4}-\d{2}-\d{2}$/.test(String(r.deliveryDate))){
+    let t = '';
+    const tm = String(r.deliveryTime || '').match(/(오전|오후)?\s*(\d{1,2})\s*[:시]\s*(\d{1,2})?/);
+    if(tm){
+      let h = +tm[2];
+      if(tm[1] === '오후' && h < 12) h += 12;
+      if(tm[1] === '오전' && h === 12) h = 0;
+      if(h <= 23) t = String(h).padStart(2,'0') + ':' + String(tm[3] ? +tm[3] : 0).padStart(2,'0');
+    }
+    return { date: String(r.deliveryDate), time: t };
+  }
+
   const text = [r.recipient, r.memo, r.message, r.notice].filter(Boolean).join('\n');
   if(!text.trim()) return null;
 
@@ -3578,6 +3627,7 @@ if(r.formType === 'bs'){
   $('#d-reason').value=r.reason || '';
   $('#d-recipient').value=r.recipient || '';
   $('#kakao-resend-wrap').style.display = r.status === 'completed' ? 'block' : 'none';
+  $('#bs-copy-wrap').style.display = r.formType === 'bs' ? 'block' : 'none';
   // 문구가 비어 있으면 기본 문구를 실제 값으로 채워둡니다.
   // (예시 글씨가 아니라 실제 값이라야 저장 및 카카오 안내문에 반영됩니다.)
   $('#d-message').value=r.message || DEFAULT_MESSAGE;
@@ -3591,6 +3641,11 @@ if(r.formType === 'bs'){
   $('#d-bs-receiver').value = r.bsReceiver || '';
   $('#d-bs-deceased').value = r.bsDeceased || '';
   $('#d-bs-qty').value = r.bsQty || DEFAULT_BS_QTY;
+  $('#d-bs-target-name').value  = r.bsTargetName  || '';
+  $('#d-bs-target-phone').value = r.bsTargetPhone || '';
+  $('#d-bs-target-dept').value  = r.bsTargetDept  || '';
+  $('#d-bs-target-title').value = r.bsTargetTitle || '';
+  $('#d-bs-target-empno').value = r.bsTargetEmpNo || '';
 
   setDetailFormMode(r.formType === 'bs' ? 'bs' : 'normal');
   $('#d-status').value=r.status; $('#d-manager').value=r.manager||''; $('#d-memo').value=r.memo||''; $('#d-reason-change').value='';
@@ -3626,6 +3681,8 @@ function buildKakaoCompleteMessage(row){
       '안녕하세요, 아래 BS 화환배송건을 요청합니다.',
       [
         `■ 발신 문서번호: ${row.docNo || '-'}`,
+        `■ 대상자: ${row.bsTargetName || '-'}${row.bsTargetTitle ? ' ' + row.bsTargetTitle : ''}${row.bsTargetDept ? ' / ' + row.bsTargetDept : ''}`,
+        `■ 대상자 연락처: ${row.bsTargetPhone || '-'}`,
         `■ 빈소: ${row.bsHall || '-'}`,
         `■ 받는분(연락처): ${row.bsReceiver || '-'}`,
         `■ 고인: ${row.bsDeceased || '-'}`,
@@ -3708,15 +3765,79 @@ function sendKakaoShare(){
     return;
   }
 
+  // 이 안내문은 상주·유가족뿐 아니라 화환 업체에도 그대로 전달됩니다.
+  // 카카오 기본 텍스트 템플릿은 링크 버튼을 반드시 하나 붙이므로(없앨 수 없음),
+  // 버튼이 눌려도 사내 화면이 아니라 FITI 대표 홈페이지로만 가게 하고
+  // 문구도 「자세히 보기」에서 바꿔 둡니다.
   Kakao.Share.sendDefault({
     objectType: 'text',
     text: message,
     link: {
-    mobileWebUrl: 'https://www.fiti.re.kr/web/contents/FT0505010000.do?schM=view&schStr=%EC%A0%84%EB%9E%B5%EA%B5%AC%EB%A7%A4%ED%8C%80',
-  webUrl: 'https://www.fiti.re.kr/web/contents/FT0505010000.do?schM=view&schStr=%EC%A0%84%EB%9E%B5%EA%B5%AC%EB%A7%A4%ED%8C%80'
+      mobileWebUrl: 'https://www.fiti.re.kr/',
 
+/* ── BS 접수서 복사 ───────────────────────────────────────────────
+   bscall.co.kr 접수 화면에 붙여 넣을 값을 클립보드로 보냅니다.
+   주소(URL)에 싣지 않습니다 — 개인정보가 브라우저 기록에 남기 때문입니다. */
+const BS_SENDER_TEXT = '(재)FITI 시험연구원 원장 윤주경';   // 보내는분 화환문구 (고정)
+const BS_CONDOLENCE  = '삼가 故人의 冥福을 빕니다';          // 경조사어 (고정)
+
+/* 빈소 한 칸에 "○○병원 장례식장 3호실" 처럼 들어 있어 장례식장명과 층/호실로 나눕니다. */
+function splitHall(s){
+  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  const m = t.match(/^(.*?)\s*((?:지하\s*)?\d+\s*(?:층)?\s*(?:[-·]?\s*)?\d*\s*호실?|\d+\s*호)\s*$/);
+  if (m) return { hall: m[1].trim(), room: m[2].replace(/\s+/g, '') };
+  return { hall: t, room: '' };
+}
+
+/* 수량 칸("화환,근조기2개,용품")에서 지원물품을 읽습니다. */
+function parseGoods(s){
+  const t = String(s || '');
+  const num = (re) => { const m = t.match(re); return m ? parseInt(m[1], 10) : null; };
+  return {
+    상조용품: /용품/.test(t),
+    상조용품수량: num(/용품\s*(\d+)/) || (/용품/.test(t) ? 2 : 0),
+    근조기: /근조기|깃발/.test(t),
+    근조기수량: num(/근조기\s*(\d+)/) || (/근조기|깃발/.test(t) ? 2 : 0),
+    근조화환: /화환/.test(t)
+  };
+}
+
+function bsPayload(r){
+  const { hall, room } = splitHall(r.bsHall);
+  return {
+    _: 'FITI-BS',                       // 북마클릿이 우리 것인지 확인하는 표식
+    대상자성명:   r.bsTargetName  || '',
+    대상자연락처: r.bsTargetPhone || '',
+    소속부서:     r.bsTargetDept  || '',
+    직책:         r.bsTargetTitle || '',
+    사원번호:     r.bsTargetEmpNo || '',
+    경조사유:     r.reason || '',
+    고인성함:     r.bsDeceased || '',
+    장례식장명:   hall,
+    층호실:       room,
+    지원물품:     parseGoods(r.bsQty),
+    보내는분문구: BS_SENDER_TEXT,
+    경조사어:     BS_CONDOLENCE,
+    부고링크:     r.notice || ''
+  };
+}
+
+async function copyBsPayload(){
+  const r = state.data.find(x => x.id === currentDetailId);
+  if(!r) return;
+  const text = JSON.stringify(bsPayload(r));
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('BS 접수서를 복사했습니다.\n\nbscall 접수 화면에서 [BS 채우기] 즐겨찾기를 누르세요.');
+  } catch (e) {
+    // 클립보드가 막히면 직접 복사하실 수 있게 보여 줍니다.
+    window.prompt('아래 내용을 복사해 BS 접수 화면에서 쓰세요.', text);
+  }
+}
+
+      webUrl: 'https://www.fiti.re.kr/'
     },
-    
+    buttonTitle: 'FITI시험연구원'
   });
 }
 
@@ -3811,6 +3932,11 @@ function saveNewDelivery(){
   const bsReceiver = $('#bs-recipient')?.value.trim() || '';
   const bsDeceased = $('#bs-deceased')?.value.trim() || '';
   const bsQty = $('#bs-qty')?.value.trim() || '';
+  const bsTargetName  = $('#bs-target-name')?.value.trim()  || '';
+  const bsTargetPhone = $('#bs-target-phone')?.value.trim() || '';
+  const bsTargetDept  = $('#bs-target-dept')?.value.trim()  || '';
+  const bsTargetTitle = $('#bs-target-title')?.value.trim() || '';
+  const bsTargetEmpNo = $('#bs-target-empno')?.value.trim() || '';
 
   let relation = $('#a-relation')?.value.trim() || '';
   let recipient = $('#a-recipient')?.value.trim() || '';
@@ -3837,6 +3963,11 @@ const row={
   formType: addFormMode,
 
   bsHall: addFormMode === 'bs' ? ($('#bs-funeral')?.value.trim() || '') : '',
+  bsTargetName:  addFormMode === 'bs' ? bsTargetName  : '',
+  bsTargetPhone: addFormMode === 'bs' ? bsTargetPhone : '',
+  bsTargetDept:  addFormMode === 'bs' ? bsTargetDept  : '',
+  bsTargetTitle: addFormMode === 'bs' ? bsTargetTitle : '',
+  bsTargetEmpNo: addFormMode === 'bs' ? bsTargetEmpNo : '',
   bsReceiver: addFormMode === 'bs' ? ($('#bs-recipient')?.value.trim() || '') : '',
   bsDeceased: addFormMode === 'bs' ? ($('#bs-deceased')?.value.trim() || '') : '',
   bsQty: addFormMode === 'bs' ? ($('#bs-qty')?.value.trim() || '') : '',
@@ -4236,6 +4367,16 @@ $('#detail-bs-mode')?.addEventListener('click',()=>{
 });
 $('#login-form').addEventListener('submit', async e=>{
   e.preventDefault();
+  const code = ($('#login-pw')?.value || '').trim();
+  if (code !== ACCESS_CODE) {
+    alert('접속 비밀번호가 맞지 않습니다.\n\n전략구매팀(내선 8124)에 문의해 주세요.');
+    $('#login-pw').value = '';
+    $('#login-pw').focus();
+    return;
+  }
+  $('#login-pw').value = '';          // 입력값을 화면에 남기지 않습니다
+
+
   state.user = $('#login-id').value.trim();
   state.role = isAdminName(state.user) ? 'manager' : 'user';
   saveLoginSession();
@@ -4243,6 +4384,7 @@ $('#login-form').addEventListener('submit', async e=>{
   applyRoleVisibility();
   await loadFromServer({ force:true, reason:'login-submit' });
 });
+$('#bs-copy')?.addEventListener('click', copyBsPayload);
 $('#logout').addEventListener('click',()=>{
   clearLoginSession();
   state.user = null;
@@ -4422,6 +4564,11 @@ $('#save-detail').addEventListener('click',()=>{
   const beforeBsReceiver = r.bsReceiver || '';
   const beforeBsDeceased = r.bsDeceased || '';
   const beforeBsQty = r.bsQty || DEFAULT_BS_QTY;
+  const beforeBsTargetName  = r.bsTargetName  || '';
+  const beforeBsTargetPhone = r.bsTargetPhone || '';
+  const beforeBsTargetDept  = r.bsTargetDept  || '';
+  const beforeBsTargetTitle = r.bsTargetTitle || '';
+  const beforeBsTargetEmpNo = r.bsTargetEmpNo || '';
 
 
 
@@ -4444,6 +4591,11 @@ $('#save-detail').addEventListener('click',()=>{
   const afterBsReceiver = $('#d-bs-receiver')?.value.trim() || '';
   const afterBsDeceased = $('#d-bs-deceased')?.value.trim() || '';
   const afterBsQty = $('#d-bs-qty')?.value.trim() || DEFAULT_BS_QTY;
+  const afterBsTargetName  = $('#d-bs-target-name')?.value.trim()  || '';
+  const afterBsTargetPhone = $('#d-bs-target-phone')?.value.trim() || '';
+  const afterBsTargetDept  = $('#d-bs-target-dept')?.value.trim()  || '';
+  const afterBsTargetTitle = $('#d-bs-target-title')?.value.trim() || '';
+  const afterBsTargetEmpNo = $('#d-bs-target-empno')?.value.trim() || '';
   const afterFormType = detailFormMode === 'bs' ? 'bs' : 'normal';
 
   // 양식을 바꾸는 경우에만 필수값을 확인합니다.
@@ -4490,6 +4642,11 @@ $('#save-detail').addEventListener('click',()=>{
   if(beforeBsReceiver !== afterBsReceiver) addLog('BS 받는분 수정', r.id, beforeTarget, beforeBsReceiver, afterBsReceiver, reason);
   if(beforeBsDeceased !== afterBsDeceased) addLog('BS 고인 수정', r.id, beforeTarget, beforeBsDeceased, afterBsDeceased, reason);
   if(beforeBsQty !== afterBsQty) addLog('BS 수량 수정', r.id, beforeTarget, beforeBsQty, afterBsQty, reason);
+  if(beforeBsTargetName !== afterBsTargetName) addLog('BS 대상자 성명 수정', r.id, beforeTarget, beforeBsTargetName, afterBsTargetName, reason);
+  if(beforeBsTargetPhone !== afterBsTargetPhone) addLog('BS 대상자 연락처 수정', r.id, beforeTarget, beforeBsTargetPhone, afterBsTargetPhone, reason);
+  if(beforeBsTargetDept !== afterBsTargetDept) addLog('BS 소속부서 수정', r.id, beforeTarget, beforeBsTargetDept, afterBsTargetDept, reason);
+  if(beforeBsTargetTitle !== afterBsTargetTitle) addLog('BS 직책 수정', r.id, beforeTarget, beforeBsTargetTitle, afterBsTargetTitle, reason);
+  if(beforeBsTargetEmpNo !== afterBsTargetEmpNo) addLog('BS 사원번호 수정', r.id, beforeTarget, beforeBsTargetEmpNo, afterBsTargetEmpNo, reason);
 }
 
   // 실제 데이터 반영: 이후 [현황 저장] 시 이 값들이 엑셀로 저장됩니다.
@@ -4505,6 +4662,11 @@ if(afterFormType === 'bs'){
   r.bsReceiver = afterBsReceiver;
   r.bsDeceased = afterBsDeceased;
   r.bsQty = afterBsQty;
+  r.bsTargetName  = afterBsTargetName;
+  r.bsTargetPhone = afterBsTargetPhone;
+  r.bsTargetDept  = afterBsTargetDept;
+  r.bsTargetTitle = afterBsTargetTitle;
+  r.bsTargetEmpNo = afterBsTargetEmpNo;
 
   r.recipient = [afterBsHall, afterBsReceiver].filter(Boolean).join('\n');
   r.relation = afterBsDeceased;
