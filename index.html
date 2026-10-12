@@ -3774,6 +3774,11 @@ function sendKakaoShare(){
     text: message,
     link: {
       mobileWebUrl: 'https://www.fiti.re.kr/',
+      webUrl: 'https://www.fiti.re.kr/'
+    },
+    buttonTitle: 'FITI시험연구원'
+  });
+}
 
 /* ── BS 접수서 복사 ───────────────────────────────────────────────
    bscall.co.kr 접수 화면에 붙여 넣을 값을 클립보드로 보냅니다.
@@ -3833,12 +3838,6 @@ async function copyBsPayload(){
     // 클립보드가 막히면 직접 복사하실 수 있게 보여 줍니다.
     window.prompt('아래 내용을 복사해 BS 접수 화면에서 쓰세요.', text);
   }
-}
-
-      webUrl: 'https://www.fiti.re.kr/'
-    },
-    buttonTitle: 'FITI시험연구원'
-  });
 }
 
 
