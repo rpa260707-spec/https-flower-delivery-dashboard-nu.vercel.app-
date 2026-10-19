@@ -1588,7 +1588,7 @@ padding-left:6px!important;
 
     <div>
       <label>수량</label>
-      <input id="d-bs-qty" placeholder="예: 화환,근조기2개,용품">
+      <input id="d-bs-qty" placeholder="예: (화환 70,000, 용품, 근조기)">
     </div>
       <div><label>대상자 성명</label><input id="d-bs-target-name" placeholder="부고를 낸 임직원"></div>
       <div><label>대상자 연락처</label><input id="d-bs-target-phone" placeholder="대상자 연락처"></div>
@@ -1730,11 +1730,19 @@ padding-left:6px!important;
       <div><label>발송사유</label><input id="a-reason" placeholder="예: 임직원 부고(비에스, )"></div>
 
       <div id="bs-fields" class="full hidden">
+        <div style="margin-bottom:12px">
+          <label>부고 메일 붙여넣기</label>
+          <textarea id="bs-paste" rows="5" placeholder="인재경영팀 부고 안내 메일을 그대로 붙여넣고 [칸 채우기]를 누르세요"></textarea>
+          <div class="row" style="margin-top:6px">
+            <button type="button" id="bs-paste-fill" class="btn small">칸 채우기</button>
+            <span id="bs-paste-msg" class="hint" style="margin-top:0"></span>
+          </div>
+        </div>
         <div class="modal-grid">
-          <div><label>빈소</label><input id="bs-funeral" placeholder="예: 삼성서울병원 장례식장 1호실"></div>
-          <div><label>받는분(연락처)</label><input id="bs-recipient" placeholder="예: 홍길동(010-0000-0000)"></div>
-          <div><label>故고인</label><input id="bs-deceased" placeholder="예: 故 김OO 님"></div>
-          <div><label>수량</label><input id="bs-qty" type="text" value="화환,근조기2개,용품" placeholder="예: 화환,근조기2개,용품"></div>
+          <div><label>빈소</label><input id="bs-funeral" placeholder="예: 의정부백병원장례식장 1호실 (경기도 의정부시 금신로322)"></div>
+          <div><label>받는분(연락처)</label><input id="bs-recipient" placeholder="예: 안광호  010-9969-3905"></div>
+          <div><label>故고인</label><input id="bs-deceased" placeholder="예: 故 안병화 (85세/남) 2026년 03월 19일 별세"></div>
+          <div><label>수량</label><input id="bs-qty" type="text" value="화환,근조기2개,용품" placeholder="예: (화환 70,000, 용품, 근조기)"></div>
           <div><label>대상자 성명</label><input id="bs-target-name" placeholder="예: 홍길동 (부고를 낸 임직원)"></div>
           <div><label>대상자 연락처</label><input id="bs-target-phone" placeholder="예: 010-0000-0000"></div>
           <div><label>소속부서</label><input id="bs-target-dept" placeholder="예: 전략구매팀"></div>
@@ -3674,22 +3682,60 @@ function setDetailFormMode(mode){
 function closeDetailSidebar(){ currentDetailId=null; $('#sidebar-content')?.classList.add('hidden'); $('#sidebar-empty')?.classList.remove('hidden'); $('#detail-sub').textContent='왼쪽 목록에서 행을 클릭하면 상세 정보가 표시됩니다.'; renderTable(); }
 function closeModals(){ $$('.modal-bg').forEach(m=>m.classList.add('hidden')); }
 
+/* 빈소 칸을 「장례식장+호실」과 「주소」로 가릅니다.
+   주소 안에 또 괄호가 들어가는 일이 흔해서(예: 경기도 의정부시 금신로322 (신곡동))
+   끝 괄호를 짝 맞춰 떼는 대신 첫 괄호에서 자릅니다.
+   다만 "서울대병원(본관) 장례식장" 처럼 이름에 괄호가 있는 경우를 잘못 자르지 않도록,
+   괄호 뒤가 주소처럼 보일 때(시·도·군·구·로·길·동이 들어갈 때)만 가릅니다. */
+function splitHallAddr(s){
+  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  const i = t.search(/[(（]/);
+  if (i <= 0) return { hall: t, addr: '' };
+  const rest = t.slice(i).replace(/^[(（]/, '').replace(/[)）]\s*$/, '').trim();
+  if (!/[시도군구]\s|[로길동읍면리]\s*\d|[로길]\d|특별시|광역시/.test(rest)) return { hall: t, addr: '' };
+  return { hall: t.slice(0, i).trim(), addr: rest };
+}
+
+/* BS 에 보내는 본문 — 업체가 받는 형식 그대로 만듭니다.
+
+     ■ 빈소: 의정부백병원장례식장 1호실
+     경기도 의정부시 금신로322 (신곡동)
+     ■ 받는분(연락처):안광호  010-9969-3905
+     ■고인  故 안병화 (85세/남)
+     2026년 03월 19일 별세
+     ■ 수량:(화환 70,000, 용품, 근조기)
+
+   빈소 칸에 "장례식장 1호실 (주소)" 로 적혀 있으면 주소를 다음 줄로 내립니다.
+   고인 칸 끝에 "2026년 03월 19일 별세" 가 붙어 있으면 그것도 다음 줄로 나눕니다.
+   띄어쓰기와 기호(■ 뒤 공백 유무)는 업체가 쓰는 그대로 맞췄습니다. */
+function bsBodyText(row){
+  const ha = splitHallAddr(row.bsHall);
+  const hall = ha.hall, addr = ha.addr;
+
+  const decRaw = String(row.bsDeceased || '').trim();
+  const mDied = decRaw.match(/^(.*?)\s*(\d{4}\s*년\s*\d{1,2}\s*월\s*\d{1,2}\s*일\s*별세)\s*$/);
+  const dec = mDied ? mDied[1].trim() : decRaw;
+  const died = mDied ? mDied[2].trim() : '';
+
+  const lines = [];
+  lines.push('■ 빈소: ' + (hall || '-'));
+  if (addr) lines.push(addr);
+  lines.push('■ 받는분(연락처):' + (row.bsReceiver || '-'));
+  lines.push('■고인  ' + (dec || '-'));
+  if (died) lines.push(died);
+  lines.push('■ 수량:' + (row.bsQty || DEFAULT_BS_QTY));
+  return lines.join('\n');
+}
+
 function buildKakaoCompleteMessage(row){
   if(row.formType === 'bs'){
     const bsSections = [
       '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
       '안녕하세요, 아래 BS 화환배송건을 요청합니다.',
-      [
-        `■ 발신 문서번호: ${row.docNo || '-'}`,
-        `■ 대상자: ${row.bsTargetName || '-'}${row.bsTargetTitle ? ' ' + row.bsTargetTitle : ''}${row.bsTargetDept ? ' / ' + row.bsTargetDept : ''}`,
-        `■ 대상자 연락처: ${row.bsTargetPhone || '-'}`,
-        `■ 빈소: ${row.bsHall || '-'}`,
-        `■ 받는분(연락처): ${row.bsReceiver || '-'}`,
-        `■ 고인: ${row.bsDeceased || '-'}`,
-        `■ 수량: ${row.bsQty || DEFAULT_BS_QTY}`
-      ].join('\n'),
+      bsBodyText(row),
       `문구:\n${row.message || DEFAULT_MESSAGE}`
     ];
+    if(row.docNo) bsSections.push(`■ 발신 문서번호: ${row.docNo}`);
 
     if(row.notice) bsSections.push(`부고안내/청첩장:\n${row.notice}`);
 
@@ -3786,9 +3832,11 @@ function sendKakaoShare(){
 const BS_SENDER_TEXT = '(재)FITI 시험연구원 원장 윤주경';   // 보내는분 화환문구 (고정)
 const BS_CONDOLENCE  = '삼가 故人의 冥福을 빕니다';          // 경조사어 (고정)
 
-/* 빈소 한 칸에 "○○병원 장례식장 3호실" 처럼 들어 있어 장례식장명과 층/호실로 나눕니다. */
+/* 빈소 한 칸에 "○○병원 장례식장 3호실 (주소)" 처럼 들어 있어
+   장례식장명과 층/호실로 나눕니다.
+   끝에 괄호로 붙은 주소는 BS 접수서에 들어가는 칸이 아니라 먼저 떼어 냅니다. */
 function splitHall(s){
-  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  const t = splitHallAddr(s).hall;                    // 주소가 붙어 있으면 떼어 냅니다
   const m = t.match(/^(.*?)\s*((?:지하\s*)?\d+\s*(?:층)?\s*(?:[-·]?\s*)?\d*\s*호실?|\d+\s*호)\s*$/);
   if (m) return { hall: m[1].trim(), room: m[2].replace(/\s+/g, '') };
   return { hall: t, room: '' };
@@ -3837,6 +3885,151 @@ async function copyBsPayload(){
   } catch (e) {
     // 클립보드가 막히면 직접 복사하실 수 있게 보여 줍니다.
     window.prompt('아래 내용을 복사해 BS 접수 화면에서 쓰세요.', text);
+  }
+}
+
+
+/* ── 부고 메일 붙여넣기 ──────────────────────────────────────────
+   인재경영팀 부고 안내 메일을 그대로 붙여넣으면 BS 칸을 채웁니다.
+   메일 형식이 조금씩 달라서, 줄 전체를 한 번에 읽지 않고
+   「빈소」「발인」「연락처」「부고안내문」처럼 조각별로 따로 찾습니다.
+   하나를 못 찾아도 나머지는 채워집니다. */
+function parseObituary(src) {
+  const t = String(src || '').replace(/\r/g, '');
+  const o = {};
+  let m;
+
+  // 부고안내문 주소 — 줄 이름이 없어도 첫 http 주소를 씁니다
+  m = t.match(/https?:\/\/[^\s<>"')]+/);
+  if (m) o.link = m[0];
+
+  // 빈소 : "한일병원장례식장 1호"  — 괄호(주소) 앞까지만
+  m = t.match(/빈\s*소\s*[:：]?\s*([^\n(（]+)/);
+  if (m) o.hall = m[1].replace(/\s+/g, ' ').trim();
+
+  // 주소 : "(주소: 서울특별시 도봉구 우이천로 308)"
+  m = t.match(/주\s*소\s*[:：]\s*([^\n)）]+)/);
+  if (m) o.addr = m[1].replace(/\s+/g, ' ').trim();
+
+  // 발인 : "2026년 10월 17일(토)"
+  m = t.match(/발\s*인\s*[:：]?\s*(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
+  if (m) o.burial = m[1] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[3]).padStart(2, '0');
+
+  // 연락처 : "김종범(010-8908-5751)" — 이름이 곧 대상자입니다
+  m = t.match(/연\s*락\s*처\s*[:：]?\s*([가-힣]{2,4})\s*[(（]\s*(01[016-9][-\s.]?\d{3,4}[-\s.]?\d{4})\s*[)）]/);
+  if (m) { o.name = m[1]; o.phone = m[2].replace(/[\s.]/g, '-'); }
+  if (!o.phone) {
+    m = t.match(/(01[016-9][-\s.]?\d{3,4}[-\s.]?\d{4})/);
+    if (m) o.phone = m[1].replace(/[\s.]/g, '-');
+  }
+
+  // 관계와 고인 : "부친(故 김동문 님)"
+  m = t.match(/([가-힣]{1,6})\s*[(（]\s*故\s*([가-힣]{2,6})\s*님?\s*[)）]/);
+  if (m) { o.relation = m[1]; o.deceased = m[2].replace(/님$/, ''); }   // '이말순님' 처럼 님이 붙어 오면 떼어 냅니다
+
+  // 대상자와 직책 : "우리원 김종범 前 본부장님의 …"
+  m = t.match(/([가-힣]{2,4})\s*(前|현|전)?\s*([가-힣]{2,8}?)\s*님의/);
+  if (m) {
+    if (!o.name) o.name = m[1];
+    /* 「前 본부장」처럼 지난 직책이면 직책을 담지 않습니다.
+       BS 접수서의 직책 칸은 현재 직책을 적는 자리이고, 퇴직자는 현직이 아닙니다.
+       대신 퇴직자 건이라는 표시만 남겨 안내문에 적습니다 — 퇴직자 경조사 지원은 별도 기준입니다. */
+    o.former = (m[2] === '前' || m[2] === '전');
+    o.title = o.former ? '' : (m[3] || '').trim();
+  }
+  /* ── BS 양식(업체가 쓰는 꼴)도 읽습니다 ──
+       ■ 빈소: 의정부백병원장례식장 1호실
+       경기도 의정부시 금신로322 (신곡동)
+       ■ 받는분(연락처):안광호  010-9969-3905
+       ■고인  故 안병화 (85세/남)
+       2026년 03월 19일 별세
+       ■ 수량:(화환 70,000, 용품, 근조기)
+     인재경영팀 메일과 칸 이름이 달라 따로 찾습니다. 위에서 이미 찾은 값은 덮어쓰지 않습니다. */
+
+  // 받는분(연락처) : 괄호가 있을 수도 없을 수도 있습니다
+  m = t.match(/받는\s*분[^:：\n]*[:：]\s*([가-힣]{2,4})\s*[(（]?\s*(01[016-9][-\s.]?\d{3,4}[-\s.]?\d{4})/);
+  if (m) { if (!o.name) o.name = m[1]; if (!o.phone) o.phone = m[2].replace(/[\s.]/g, '-'); }
+
+  // 고인 : "■고인  故 안병화 (85세/남)" — 나이·성별이 붙어 있으면 그대로 둡니다
+  if (!o.deceased) {
+    m = t.match(/故\s*([가-힣]{2,5})\s*(?:님)?\s*([(（][^)）\n]*[)）])?/);
+    if (m) o.deceased = (m[1] + (m[2] ? ' ' + m[2].replace(/\s+/g, '') : '')).trim();
+  }
+
+  // 별세일 : "2026년 03월 19일 별세"
+  m = t.match(/(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일\s*별세/);
+  if (m) o.died = m[1] + '년 ' + String(m[2]).padStart(2, '0') + '월 ' + String(m[3]).padStart(2, '0') + '일 별세';
+
+  // 수량 : "■ 수량:(화환 70,000, 용품, 근조기)"
+  m = t.match(/수\s*량\s*[:：]\s*(.+)/);
+  if (m) o.qty = m[1].trim();
+
+  // 주소가 "주소:" 없이 빈소 바로 다음 줄에 오는 형식
+  if (!o.addr) {
+    const lines = t.split('\n').map(function (x) { return x.trim(); });
+    for (let i = 0; i < lines.length - 1; i++) {
+      if (/빈\s*소/.test(lines[i])) {
+        const nx = lines[i + 1];
+        if (nx && !/^[■*]/.test(nx) && /(특별시|광역시|[가-힣]+시|[가-힣]+군|[가-힣]+구)/.test(nx)) { o.addr = nx; }
+        break;
+      }
+    }
+  }
+
+  return o;
+}
+
+/* 부고에서 읽은 값을 신규 등록 BS 칸에 넣습니다.
+   이미 적어 둔 칸은 덮어쓰지 않습니다 — 손으로 고친 것을 지우면 안 되니까요. */
+function fillBsFromObituary() {
+  const box = document.getElementById('bs-paste');
+  const msg = document.getElementById('bs-paste-msg');
+  if (!box) return;
+  const o = parseObituary(box.value);
+
+  const put = (id, v) => {
+    const el = document.getElementById(id);
+    if (!el || !v) return false;
+    if (String(el.value || '').trim()) return false;   // 이미 있으면 그대로
+    el.value = v;
+    return true;
+  };
+
+  const done = [];
+  if (put('bs-target-name', o.name)) done.push('대상자');
+  if (put('bs-target-phone', o.phone)) done.push('연락처');
+  if (put('bs-target-title', o.title)) done.push('직책');
+  // 고인 — 「故 안병화 (85세/남)」 뒤에 별세일을 붙여 둡니다. BS 본문에서 줄이 나뉩니다.
+  if (put('bs-deceased', o.deceased ? ('故 ' + o.deceased + (o.died ? ' ' + o.died : '')) : '')) done.push('고인');
+  // 빈소에 주소를 괄호로 같이 넣습니다. BS 접수서로 넘길 때는 splitHall 이 괄호를 떼어 냅니다.
+  if (put('bs-funeral', o.hall ? (o.hall + (o.addr ? ' (' + o.addr + ')' : '')) : '')) done.push('빈소');
+  if (o.name && o.phone && put('bs-recipient', o.name + '  ' + o.phone)) done.push('받는분');
+  if (put('bs-qty', o.qty)) done.push('수량');
+  if (put('a-reason', o.relation ? '임직원 ' + o.relation + ' 부고(비에스)' : '')) done.push('발송사유');
+  if (put('a-notice', o.link)) done.push('부고안내');
+
+  // 발인은 BS 접수서에 들어가는 칸이 아니라 관리메모에 남깁니다. 주소는 빈소 칸으로 갑니다.
+  const extra = [];
+  if (o.burial) extra.push('발인: ' + o.burial);
+  if (extra.length) { if (put('a-memo', extra.join('\n'))) done.push('메모(발인)'); }
+
+  const miss = [];
+  if (!o.name) miss.push('대상자');
+  if (!o.phone) miss.push('연락처');
+  if (!o.hall) miss.push('빈소');
+  if (!o.deceased) miss.push('고인');
+  if (!o.link) miss.push('부고안내');
+
+  if (msg) {
+    var tail = ' &nbsp;/&nbsp; 소속부서 · 사원번호는 부고에 없어 직접 넣으셔야 합니다';
+    if (o.former) {
+      tail += ' &nbsp;/&nbsp; <b style="color:#b45309">前 직책이라 직책 칸은 비워 뒀습니다 — 퇴직자 경조사 지원은 별도 기준입니다</b>';
+    }
+    msg.innerHTML = done.length
+      ? '채웠습니다 — <b>' + done.join(' · ') + '</b>'
+        + (miss.length ? ' &nbsp;/&nbsp; 못 읽음 : ' + miss.join(' · ') : '')
+        + tail
+      : '읽을 수 있는 내용이 없습니다. 부고 메일 전체를 붙여넣어 주세요.';
   }
 }
 
@@ -4384,6 +4577,7 @@ $('#login-form').addEventListener('submit', async e=>{
   await loadFromServer({ force:true, reason:'login-submit' });
 });
 $('#bs-copy')?.addEventListener('click', copyBsPayload);
+$('#bs-paste-fill')?.addEventListener('click', fillBsFromObituary);
 $('#logout').addEventListener('click',()=>{
   clearLoginSession();
   state.user = null;
