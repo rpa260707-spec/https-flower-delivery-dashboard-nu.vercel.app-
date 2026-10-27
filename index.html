@@ -1383,8 +1383,11 @@ padding-left:6px!important;
   .up-daytitle{font-size:14px;font-weight:950;color:#0f172a}
   .up-daycount{font-size:12px;font-weight:900;color:var(--muted);white-space:nowrap}
   .up-rows{display:flex;flex-direction:column;gap:6px}
-  .up-row{display:grid;grid-template-columns:78px 128px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid #e5eaf2;border-radius:11px;padding:8px 10px;cursor:pointer;font:inherit}
+  .up-row{display:grid;grid-template-columns:78px 110px 150px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid #e5eaf2;border-radius:11px;padding:8px 10px;cursor:pointer;font:inherit}
   .up-row:hover{background:#f1f5ff;border-color:#c7d2fe}
+  /* 신청자 — 「누가 올린 건인지」가 안 보여 목록에서 건을 못 가리던 문제 */
+  .up-who{font-weight:600;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .up-who.na{color:#94a3b8;font-weight:500}
   .up-time{font-size:12px;font-weight:950;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}
   .up-time.na{color:#94a3b8}
   .up-item{font-size:13px;font-weight:900;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1392,6 +1395,7 @@ padding-left:6px!important;
   .up-empty{padding:26px;text-align:center;color:var(--muted);font-size:13px;line-height:1.7}
   @media(max-width:820px){
     .up-row{grid-template-columns:70px 1fr;row-gap:5px}
+    .up-who{grid-column:1/-1}
     .up-place{grid-column:1/-1}
     .up-row .status{grid-column:2;justify-self:end}
   }
@@ -1540,6 +1544,7 @@ padding-left:6px!important;
     <option value="">선택</option>
     <option value="축하화환">축하화환</option>
     <option value="근조화환">근조화환</option>
+    <option value="쌀화환">쌀화환</option>
     <option value="BS_근조화환">BS_근조화환</option>
     <option value="서양란">서양란</option>
     <option value="축하화분">축하화분</option>
@@ -1590,16 +1595,13 @@ padding-left:6px!important;
       <label>수량</label>
       <input id="d-bs-qty" placeholder="예: (화환 70,000, 용품, 근조기)">
     </div>
-      <div><label>대상자 성명</label><input id="d-bs-target-name" placeholder="부고를 낸 임직원"></div>
-      <div><label>대상자 연락처</label><input id="d-bs-target-phone" placeholder="대상자 연락처"></div>
-      <div><label>소속부서</label><input id="d-bs-target-dept" placeholder="소속부서"></div>
-      <div><label>직책</label><input id="d-bs-target-title" placeholder="직책"></div>
-      <div><label>사원번호</label><input id="d-bs-target-empno" placeholder="사원번호"></div>
   </div>
 </div>
             <div class="sidebar-section detail-general-only">
-             <h3>배송장소 / 수신자 수정</h3>
-              <textarea id="d-recipient" rows="6" placeholder="배송일, 시간, 배송장소, 수신자, 연락처 등을 입력"></textarea>
+             <h3>배송장소 / 수신자 수정
+               <button type="button" id="d-recipient-form" class="btn ghost small"
+                       title="결재 양식과 같은 다섯 줄 틀을 넣습니다">양식</button></h3>
+              <textarea id="d-recipient" rows="7" placeholder="[양식] 을 누르면 결재 양식과 같은 다섯 줄이 들어갑니다"></textarea>
             </div>
           <div class="sidebar-section">
             <h3>문구 수정</h3>
@@ -1618,13 +1620,6 @@ padding-left:6px!important;
       <div><label>변경 사유(선택)</label><input id="d-reason-change" placeholder="예: 업체 배송 요청 확인, 담당자 확인 요청 등"></div>
               </div>
               <div class="sidebar-actions edit-only"><button id="delete-detail" class="btn red" type="button">삭제</button><button id="save-detail" class="btn" type="button">저장</button></div>
-            </div>
-            <!-- BS 건만 보입니다. 접수에 필요한 값을 클립보드로 복사해,
-                 bscall 접수 화면에서 북마클릿으로 붙여 넣습니다.
-                 주소(URL)에 싣지 않는 이유 — 개인정보가 브라우저 기록에 남습니다. -->
-            <div id="bs-copy-wrap" style="margin-top:10px;display:none">
-              <button id="bs-copy" class="btn ghost small" type="button"
-                      title="BS 접수 화면에 붙여 넣을 값을 복사합니다">BS 접수서 복사</button>
             </div>
             <div id="kakao-resend-wrap" style="margin-top:10px;display:none">
   <button id="kakao-resend" ...>📨 카카오 배송 안내 다시 보내기</button>
@@ -1697,6 +1692,7 @@ padding-left:6px!important;
           <option value="">선택</option>
           <option value="축하화환">축하화환</option>
           <option value="근조화환">근조화환</option>
+          <option value="쌀화환">쌀화환</option>
           <option value="BS_근조화환">BS_근조화환</option>
           <option value="서양란">서양란</option>
           <option value="축하화분">축하화분</option>
@@ -1743,17 +1739,15 @@ padding-left:6px!important;
           <div><label>받는분(연락처)</label><input id="bs-recipient" placeholder="예: 안광호  010-9969-3905"></div>
           <div><label>故고인</label><input id="bs-deceased" placeholder="예: 故 안병화 (85세/남) 2026년 03월 19일 별세"></div>
           <div><label>수량</label><input id="bs-qty" type="text" value="화환,근조기2개,용품" placeholder="예: (화환 70,000, 용품, 근조기)"></div>
-          <div><label>대상자 성명</label><input id="bs-target-name" placeholder="예: 홍길동 (부고를 낸 임직원)"></div>
-          <div><label>대상자 연락처</label><input id="bs-target-phone" placeholder="예: 010-0000-0000"></div>
-          <div><label>소속부서</label><input id="bs-target-dept" placeholder="예: 전략구매팀"></div>
-          <div><label>직책</label><input id="bs-target-title" placeholder="예: 팀장"></div>
-          <div><label>사원번호</label><input id="bs-target-empno" placeholder="예: 20231234"></div>
         </div>
       </div>
 
       <div><label>발신 문서번호</label><input id="a-docno" placeholder="예: 전략구매-2026-0123"></div>
       <div class="general-only"><label>관계(실적 등)</label><input id="a-relation" placeholder="관계 또는 실적 내용"></div>
-      <div class="full general-only"><label>배송장소/수신자</label><textarea id="a-recipient" rows="3" placeholder="배송장소와 수신자 입력"></textarea></div>
+      <div class="full general-only"><label>배송장소/수신자
+        <button type="button" id="a-recipient-form" class="btn ghost small"
+                title="결재 양식과 같은 다섯 줄 틀을 넣습니다">양식</button></label>
+        <textarea id="a-recipient" rows="6" placeholder="[양식] 을 누르면 결재 양식과 같은 다섯 줄이 들어갑니다"></textarea></div>
       <div class="full"><label>문구</label><textarea id="a-message" rows="3" placeholder="리본 문구 또는 전달 문구"></textarea></div>
       <div class="full"><label>부고안내/청첩장</label><textarea id="a-notice" rows="3" placeholder="관련 안내 내용 입력"></textarea></div>
 
@@ -2122,6 +2116,21 @@ padding-left:6px!important;
           </ul>
         </div>
       </div>
+
+      <!-- 단가 — 「얼마짜리가 나가는가」가 지침 어디에도 없었습니다.
+           근거는 구매 요령이 아니라 휴가·휴직 업무처리지침 <별표 2> 와 화환 예산입니다. -->
+      <div class="guide-note">
+        <h4>💰 품목별 단가</h4>
+        <ul>
+          <li>축하화환 <b>75,000</b> · 근조화환 <b>75,000</b> · BS_근조화환 <b>70,000</b>
+            · 쌀화환 <b>80,000</b> · 서양란 <b>100,000</b> · 축하화분 <b>100,000</b>
+            <span class="art-eg">쌀화환은 <b>근조화환과 같은 건</b>입니다 — 지역 · 업체에 따라 꼴만 다릅니다(예 : 청주 — 아모르).
+              별표 2 의 지원 항목이 하나 더 생긴 것이 아니라, 단가만 다르니 접수할 때 품목을 그렇게 고르시면 됩니다.</span></li>
+          <li style="margin-top:6px"><b>지원 여부 · 대상</b> — 휴가 · 휴직 업무처리지침 <b>&lt;별표 2&gt;</b>
+            (위 「화환 발주 대상」 표)</li>
+          <li><b>단가</b> — <b>예산집행지침</b>. 결재 양식에 「<b>화환대 최대 금액 100,000원</b>(예산집행지침 참고)」으로 적혀 있습니다. 품목을 고르면 자동으로 들어갑니다</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
@@ -2155,6 +2164,7 @@ const STATUS_OPTIONS = [
 const ITEM_PRICE_MAP = {
   '축하화환': 75000,
   '근조화환': 75000,
+  '쌀화환': 80000,
   'BS_근조화환': 70000,
   '서양란': 100000,
   '축하화분': 100000
@@ -3298,9 +3308,13 @@ function renderUpcoming(){
     const rows = g.map(x => {
       const r = x.row;
       const place = String(r.recipient || '').split('\n').map(s => s.trim()).filter(Boolean)[0] || '-';
+      // 거래처/발송사유 칸이 「누가 · 무슨 일로」를 담습니다.
+      // 첫 줄의 첫 조각만 씁니다 — 「결혼(11/1)」 같은 괄호 안 날짜는 건드리지 않습니다.
+      const who = String(r.client || r.reason || '').split('\n')[0].split(',')[0].trim();
       return `<button type="button" class="up-row" data-id="${r.id}">`
         + `<span class="up-time${x.time ? '' : ' na'}">${escapeHtml(x.time || '시간미정')}</span>`
         + `<span class="up-item">${escapeHtml(r.item || '-')}</span>`
+        + `<span class="up-who${who ? '' : ' na'}" title="${escapeHtml(who || '')}">${escapeHtml(who || '신청자 미기재')}</span>`
         + `<span class="up-place">${escapeHtml(place)}</span>`
         + `<span class="status s-${escapeHtml(r.status)}">${escapeHtml(statusLabel(r.status))}</span>`
         + `</button>`;
@@ -3635,10 +3649,9 @@ if(r.formType === 'bs'){
   $('#d-reason').value=r.reason || '';
   $('#d-recipient').value=r.recipient || '';
   $('#kakao-resend-wrap').style.display = r.status === 'completed' ? 'block' : 'none';
-  $('#bs-copy-wrap').style.display = r.formType === 'bs' ? 'block' : 'none';
   // 문구가 비어 있으면 기본 문구를 실제 값으로 채워둡니다.
   // (예시 글씨가 아니라 실제 값이라야 저장 및 카카오 안내문에 반영됩니다.)
-  $('#d-message').value=r.message || DEFAULT_MESSAGE;
+  $('#d-message').value=r.message || defaultMessageFor(r.formType);
   $('#d-notice').value=r.notice || '';
   if($('#d-docno')) $('#d-docno').value = r.docNo || '';
   if($('#d-relation')) $('#d-relation').value = r.relation || '';
@@ -3649,11 +3662,6 @@ if(r.formType === 'bs'){
   $('#d-bs-receiver').value = r.bsReceiver || '';
   $('#d-bs-deceased').value = r.bsDeceased || '';
   $('#d-bs-qty').value = r.bsQty || DEFAULT_BS_QTY;
-  $('#d-bs-target-name').value  = r.bsTargetName  || '';
-  $('#d-bs-target-phone').value = r.bsTargetPhone || '';
-  $('#d-bs-target-dept').value  = r.bsTargetDept  || '';
-  $('#d-bs-target-title').value = r.bsTargetTitle || '';
-  $('#d-bs-target-empno').value = r.bsTargetEmpNo || '';
 
   setDetailFormMode(r.formType === 'bs' ? 'bs' : 'normal');
   $('#d-status').value=r.status; $('#d-manager').value=r.manager||''; $('#d-memo').value=r.memo||''; $('#d-reason-change').value='';
@@ -3733,7 +3741,7 @@ function buildKakaoCompleteMessage(row){
       '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
       '안녕하세요, 아래 BS 화환배송건을 요청합니다.',
       bsBodyText(row),
-      `문구:\n${row.message || DEFAULT_MESSAGE}`
+      `문구:\n${row.message || defaultMessageFor(row.formType)}`
     ];
     if(row.docNo) bsSections.push(`■ 발신 문서번호: ${row.docNo}`);
 
@@ -3755,7 +3763,7 @@ function buildKakaoCompleteMessage(row){
       '배송장소/수신자:',
       row.recipient || '-'
     ].join('\n'),
-    `문구:\n${row.message || DEFAULT_MESSAGE}`
+    `문구:\n${row.message || defaultMessageFor(row.formType)}`
   ];
 
   if(row.notice) sections.push(`부고안내/청첩장:\n${row.notice}`);
@@ -3826,67 +3834,10 @@ function sendKakaoShare(){
   });
 }
 
-/* ── BS 접수서 복사 ───────────────────────────────────────────────
-   bscall.co.kr 접수 화면에 붙여 넣을 값을 클립보드로 보냅니다.
-   주소(URL)에 싣지 않습니다 — 개인정보가 브라우저 기록에 남기 때문입니다. */
+/* 화환 리본에 들어가는 두 줄입니다. 업체에 보내는 「문구」의 기본값이기도 합니다.
+   2026-10-27 — bscall 접수 시스템이 접히고 카카오톡 접수로 돌아가 접수서 복사는 걷어냈습니다. */
 const BS_SENDER_TEXT = '(재)FITI 시험연구원 원장 윤주경';   // 보내는분 화환문구 (고정)
 const BS_CONDOLENCE  = '삼가 故人의 冥福을 빕니다';          // 경조사어 (고정)
-
-/* 빈소 한 칸에 "○○병원 장례식장 3호실 (주소)" 처럼 들어 있어
-   장례식장명과 층/호실로 나눕니다.
-   끝에 괄호로 붙은 주소는 BS 접수서에 들어가는 칸이 아니라 먼저 떼어 냅니다. */
-function splitHall(s){
-  const t = splitHallAddr(s).hall;                    // 주소가 붙어 있으면 떼어 냅니다
-  const m = t.match(/^(.*?)\s*((?:지하\s*)?\d+\s*(?:층)?\s*(?:[-·]?\s*)?\d*\s*호실?|\d+\s*호)\s*$/);
-  if (m) return { hall: m[1].trim(), room: m[2].replace(/\s+/g, '') };
-  return { hall: t, room: '' };
-}
-
-/* 수량 칸("화환,근조기2개,용품")에서 지원물품을 읽습니다. */
-function parseGoods(s){
-  const t = String(s || '');
-  const num = (re) => { const m = t.match(re); return m ? parseInt(m[1], 10) : null; };
-  return {
-    상조용품: /용품/.test(t),
-    상조용품수량: num(/용품\s*(\d+)/) || (/용품/.test(t) ? 2 : 0),
-    근조기: /근조기|깃발/.test(t),
-    근조기수량: num(/근조기\s*(\d+)/) || (/근조기|깃발/.test(t) ? 2 : 0),
-    근조화환: /화환/.test(t)
-  };
-}
-
-function bsPayload(r){
-  const { hall, room } = splitHall(r.bsHall);
-  return {
-    _: 'FITI-BS',                       // 북마클릿이 우리 것인지 확인하는 표식
-    대상자성명:   r.bsTargetName  || '',
-    대상자연락처: r.bsTargetPhone || '',
-    소속부서:     r.bsTargetDept  || '',
-    직책:         r.bsTargetTitle || '',
-    사원번호:     r.bsTargetEmpNo || '',
-    경조사유:     r.reason || '',
-    고인성함:     r.bsDeceased || '',
-    장례식장명:   hall,
-    층호실:       room,
-    지원물품:     parseGoods(r.bsQty),
-    보내는분문구: BS_SENDER_TEXT,
-    경조사어:     BS_CONDOLENCE,
-    부고링크:     r.notice || ''
-  };
-}
-
-async function copyBsPayload(){
-  const r = state.data.find(x => x.id === currentDetailId);
-  if(!r) return;
-  const text = JSON.stringify(bsPayload(r));
-  try {
-    await navigator.clipboard.writeText(text);
-    alert('BS 접수서를 복사했습니다.\n\nbscall 접수 화면에서 [BS 채우기] 즐겨찾기를 누르세요.');
-  } catch (e) {
-    // 클립보드가 막히면 직접 복사하실 수 있게 보여 줍니다.
-    window.prompt('아래 내용을 복사해 BS 접수 화면에서 쓰세요.', text);
-  }
-}
 
 
 /* ── 부고 메일 붙여넣기 ──────────────────────────────────────────
@@ -3932,8 +3883,9 @@ function parseObituary(src) {
   if (m) {
     if (!o.name) o.name = m[1];
     /* 「前 본부장」처럼 지난 직책이면 직책을 담지 않습니다.
-       BS 접수서의 직책 칸은 현재 직책을 적는 자리이고, 퇴직자는 현직이 아닙니다.
-       대신 퇴직자 건이라는 표시만 남겨 안내문에 적습니다 — 퇴직자 경조사 지원은 별도 기준입니다. */
+       직책 칸은 2026-10-27 에 없앴지만(비에스가 카톡 접수로 되돌림),
+       퇴직자 건이라는 표시는 남겨 둡니다 — 퇴직자 경조사 지원은 별도 기준이라
+       안내문에 그 한 줄이 떠야 합니다. */
     o.former = (m[2] === '前' || m[2] === '전');
     o.title = o.former ? '' : (m[3] || '').trim();
   }
@@ -3996,12 +3948,9 @@ function fillBsFromObituary() {
   };
 
   const done = [];
-  if (put('bs-target-name', o.name)) done.push('대상자');
-  if (put('bs-target-phone', o.phone)) done.push('연락처');
-  if (put('bs-target-title', o.title)) done.push('직책');
   // 고인 — 「故 안병화 (85세/남)」 뒤에 별세일을 붙여 둡니다. BS 본문에서 줄이 나뉩니다.
   if (put('bs-deceased', o.deceased ? ('故 ' + o.deceased + (o.died ? ' ' + o.died : '')) : '')) done.push('고인');
-  // 빈소에 주소를 괄호로 같이 넣습니다. BS 접수서로 넘길 때는 splitHall 이 괄호를 떼어 냅니다.
+  // 빈소에 주소를 괄호로 같이 넣습니다. 업체 본문에서는 splitHallAddr 이 줄을 나눕니다.
   if (put('bs-funeral', o.hall ? (o.hall + (o.addr ? ' (' + o.addr + ')' : '')) : '')) done.push('빈소');
   if (o.name && o.phone && put('bs-recipient', o.name + '  ' + o.phone)) done.push('받는분');
   if (put('bs-qty', o.qty)) done.push('수량');
@@ -4021,9 +3970,9 @@ function fillBsFromObituary() {
   if (!o.link) miss.push('부고안내');
 
   if (msg) {
-    var tail = ' &nbsp;/&nbsp; 소속부서 · 사원번호는 부고에 없어 직접 넣으셔야 합니다';
+    var tail = '';
     if (o.former) {
-      tail += ' &nbsp;/&nbsp; <b style="color:#b45309">前 직책이라 직책 칸은 비워 뒀습니다 — 퇴직자 경조사 지원은 별도 기준입니다</b>';
+      tail = ' &nbsp;/&nbsp; <b style="color:#b45309">前 직책입니다 — 퇴직자 경조사 지원은 별도 기준입니다</b>';
     }
     msg.innerHTML = done.length
       ? '채웠습니다 — <b>' + done.join(' · ') + '</b>'
@@ -4042,9 +3991,79 @@ const BS_ITEM_NAME = 'BS_근조화환';
 
 // 신규 등록 시 문구 기본값. 필요하면 등록창에서 그대로 고쳐 쓸 수 있습니다.
 const DEFAULT_MESSAGE = '(재)FITI 시험연구원 원장 윤주경';
+/* BS(부고) 건은 리본에 경조사어가 먼저 오고 보내는분이 아래 붙습니다.
+   일반 건(결혼 · 축하)에는 경조사어를 쓰지 않습니다. */
+const DEFAULT_MESSAGE_BS = BS_CONDOLENCE + String.fromCharCode(10) + BS_SENDER_TEXT;
+const defaultMessageFor = (formType) => formType === 'bs' ? DEFAULT_MESSAGE_BS : DEFAULT_MESSAGE;
 
 // BS 양식 수량 기본값
 const DEFAULT_BS_QTY = '화환,근조기2개,용품';
+
+/* ── 배송장소/수신자 — 결재 양식과 같은 꼴 ───────────────────────────
+   그룹웨어 「화환(꽃/화분) 배송 신청서」의 칸 이름이 이 다섯 줄입니다.
+   같은 꼴로 적어 두면 결재 올릴 때 줄째로 떼어 옮기면 됩니다.
+   라벨의 띄어쓰기(배 송 일 · 시    간)도 결재 양식 그대로입니다. */
+const RECIPIENT_LABELS = ['배 송 일 : ', ' 시    간 : ', ' 배송장소 : ', ' 수 신 자 : ', ' 연 락 처 : '];
+
+function recipientForm(v){
+  const g = (i) => (v && v[i]) ? v[i] : '';
+  return RECIPIENT_LABELS.map((lab, i) => lab + g(i)).join('\n');
+}
+
+/* 2026-10-31 → 2026.10.31(토) */
+function kDate(iso){
+  const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '';
+  const dt = new Date(+m[1], +m[2] - 1, +m[3]);
+  if (isNaN(dt)) return '';
+  return `${m[1]}.${m[2]}.${m[3]}(${'일월화수목금토'[dt.getDay()]})`;
+}
+
+/* 16:50 → 오후 4시 50분 */
+function kTime(hhmm){
+  const m = String(hhmm || '').match(/^(\d{2}):(\d{2})$/);
+  if (!m) return '';
+  let h = +m[1];
+  const ap = h < 12 ? '오전' : '오후';
+  let h12 = h % 12; if (h12 === 0) h12 = 12;
+  const min = +m[2];
+  return ap + ' ' + h12 + '시' + (min ? ' ' + min + '분' : '');
+}
+
+/* 「- 장소 : 청주 아모르아트컨벤션 2층 그랜드홀」처럼 라벨이 붙은 줄에서 값만 꺼냅니다.
+   라벨이 없으면 빈 값입니다 — 엉뚱한 줄을 넣느니 비워 두는 편이 낫습니다. */
+function labelled(t, re){
+  const m = String(t || '').match(re);
+  return m ? m[1].replace(/\s+/g, ' ').trim() : '';
+}
+const RE_PLACE = /(?:^|\n)\s*[-•*]?\s*(?:배\s*송\s*장\s*소|장\s*소|예식장|식\s*장|빈\s*소)\s*[:：]\s*([^\n]+)/;
+const RE_TO    = /(?:^|\n)\s*[-•*]?\s*(?:수\s*신\s*자|받는\s*분|받는\s*이|상\s*주)\s*[:：]\s*([^\n]+)/;
+
+/* 붙여넣은 글에서 전화번호 한 개 */
+function firstPhone(t){
+  const m = String(t || '').match(/(0\d{1,2})[-.\s]?(\d{3,4})[-.\s]?(\d{4})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+}
+
+/* [양식] 단추 · 붙여넣기 — 빈 칸이면 틀만 넣고,
+   글이 있으면 읽어낼 수 있는 것을 채운 틀을 만듭니다.
+   다섯 줄을 다 읽었으면 원문은 지우고, 하나라도 못 읽었으면 아래에 남깁니다. */
+function fillRecipientForm(id){
+  const box = document.getElementById(id);
+  if (!box) return;
+  const cur = String(box.value || '').trim();
+
+  if (!cur) { box.value = recipientForm([]); box.focus(); return; }
+  if (cur.indexOf('배 송 일') >= 0) { alert('이미 양식이 들어 있습니다.'); box.focus(); return; }
+
+  const sch = parseDeliverySchedule({ recipient: cur }) || {};
+  const got = [kDate(sch.date), kTime(sch.time),
+               labelled(cur, RE_PLACE), labelled(cur, RE_TO), firstPhone(cur)];
+  const all = got.every(Boolean);
+  box.value = recipientForm(got) + (all ? '' : '\n\n' + cur);
+  box.focus();
+}
+
 
 // [BS 양식] 버튼을 눌렀을 때 품목도 BS_근조화환으로 맞춰줍니다.
 // 이미 다른 품목을 직접 입력해둔 경우에는 건드리지 않습니다.
@@ -4067,6 +4086,16 @@ function syncBsItemSelection(presetSelector, itemSelector, priceSelector){
 
 function setAddFormMode(mode){
   addFormMode = mode === 'bs' ? 'bs' : 'normal';
+
+  /* 문구 기본값도 양식을 따라갑니다. BS(부고)는 경조사어가 한 줄 먼저 옵니다.
+     손으로 고쳐 둔 문구는 건드리지 않습니다 — 기본값 그대로일 때만 바꿉니다. */
+  const msgBox = $('#a-message');
+  if (msgBox) {
+    const cur = String(msgBox.value || '').trim();
+    if (!cur || cur === DEFAULT_MESSAGE || cur === DEFAULT_MESSAGE_BS) {
+      msgBox.value = defaultMessageFor(addFormMode);
+    }
+  }
 
   const modalTitle = $('#add-modal h2');
   if(modalTitle){
@@ -4124,11 +4153,6 @@ function saveNewDelivery(){
   const bsReceiver = $('#bs-recipient')?.value.trim() || '';
   const bsDeceased = $('#bs-deceased')?.value.trim() || '';
   const bsQty = $('#bs-qty')?.value.trim() || '';
-  const bsTargetName  = $('#bs-target-name')?.value.trim()  || '';
-  const bsTargetPhone = $('#bs-target-phone')?.value.trim() || '';
-  const bsTargetDept  = $('#bs-target-dept')?.value.trim()  || '';
-  const bsTargetTitle = $('#bs-target-title')?.value.trim() || '';
-  const bsTargetEmpNo = $('#bs-target-empno')?.value.trim() || '';
 
   let relation = $('#a-relation')?.value.trim() || '';
   let recipient = $('#a-recipient')?.value.trim() || '';
@@ -4155,11 +4179,6 @@ const row={
   formType: addFormMode,
 
   bsHall: addFormMode === 'bs' ? ($('#bs-funeral')?.value.trim() || '') : '',
-  bsTargetName:  addFormMode === 'bs' ? bsTargetName  : '',
-  bsTargetPhone: addFormMode === 'bs' ? bsTargetPhone : '',
-  bsTargetDept:  addFormMode === 'bs' ? bsTargetDept  : '',
-  bsTargetTitle: addFormMode === 'bs' ? bsTargetTitle : '',
-  bsTargetEmpNo: addFormMode === 'bs' ? bsTargetEmpNo : '',
   bsReceiver: addFormMode === 'bs' ? ($('#bs-recipient')?.value.trim() || '') : '',
   bsDeceased: addFormMode === 'bs' ? ($('#bs-deceased')?.value.trim() || '') : '',
   bsQty: addFormMode === 'bs' ? ($('#bs-qty')?.value.trim() || '') : '',
@@ -4547,6 +4566,18 @@ $('#d-item-preset')?.addEventListener('change', ()=>{
 $('#d-client-preset')?.addEventListener('change', ()=>{
   applyClientPresetTo('#d-client-preset', '#d-client');
 });
+$('#a-recipient-form')?.addEventListener('click', ()=>fillRecipientForm('a-recipient'));
+$('#d-recipient-form')?.addEventListener('click', ()=>fillRecipientForm('d-recipient'));
+/* 문서에서 붙여넣는 순간 정리합니다 — 단추를 안 눌러도 되게.
+   못 읽은 칸이 있으면 원문이 아래에 남으니 잃어버릴 것이 없습니다. */
+['a-recipient','d-recipient'].forEach(id => {
+  document.getElementById(id)?.addEventListener('paste', () => {
+    setTimeout(() => {
+      const box = document.getElementById(id);
+      if (box && String(box.value || '').indexOf('배 송 일') < 0) fillRecipientForm(id);
+    }, 0);
+  });
+});
 $('#add-normal-mode')?.addEventListener('click',()=>setAddFormMode('normal'));
 $('#add-bs-mode')?.addEventListener('click',()=>{
   setAddFormMode('bs');
@@ -4576,7 +4607,6 @@ $('#login-form').addEventListener('submit', async e=>{
   applyRoleVisibility();
   await loadFromServer({ force:true, reason:'login-submit' });
 });
-$('#bs-copy')?.addEventListener('click', copyBsPayload);
 $('#bs-paste-fill')?.addEventListener('click', fillBsFromObituary);
 $('#logout').addEventListener('click',()=>{
   clearLoginSession();
@@ -4757,11 +4787,6 @@ $('#save-detail').addEventListener('click',()=>{
   const beforeBsReceiver = r.bsReceiver || '';
   const beforeBsDeceased = r.bsDeceased || '';
   const beforeBsQty = r.bsQty || DEFAULT_BS_QTY;
-  const beforeBsTargetName  = r.bsTargetName  || '';
-  const beforeBsTargetPhone = r.bsTargetPhone || '';
-  const beforeBsTargetDept  = r.bsTargetDept  || '';
-  const beforeBsTargetTitle = r.bsTargetTitle || '';
-  const beforeBsTargetEmpNo = r.bsTargetEmpNo || '';
 
 
 
@@ -4784,11 +4809,6 @@ $('#save-detail').addEventListener('click',()=>{
   const afterBsReceiver = $('#d-bs-receiver')?.value.trim() || '';
   const afterBsDeceased = $('#d-bs-deceased')?.value.trim() || '';
   const afterBsQty = $('#d-bs-qty')?.value.trim() || DEFAULT_BS_QTY;
-  const afterBsTargetName  = $('#d-bs-target-name')?.value.trim()  || '';
-  const afterBsTargetPhone = $('#d-bs-target-phone')?.value.trim() || '';
-  const afterBsTargetDept  = $('#d-bs-target-dept')?.value.trim()  || '';
-  const afterBsTargetTitle = $('#d-bs-target-title')?.value.trim() || '';
-  const afterBsTargetEmpNo = $('#d-bs-target-empno')?.value.trim() || '';
   const afterFormType = detailFormMode === 'bs' ? 'bs' : 'normal';
 
   // 양식을 바꾸는 경우에만 필수값을 확인합니다.
@@ -4835,11 +4855,6 @@ $('#save-detail').addEventListener('click',()=>{
   if(beforeBsReceiver !== afterBsReceiver) addLog('BS 받는분 수정', r.id, beforeTarget, beforeBsReceiver, afterBsReceiver, reason);
   if(beforeBsDeceased !== afterBsDeceased) addLog('BS 고인 수정', r.id, beforeTarget, beforeBsDeceased, afterBsDeceased, reason);
   if(beforeBsQty !== afterBsQty) addLog('BS 수량 수정', r.id, beforeTarget, beforeBsQty, afterBsQty, reason);
-  if(beforeBsTargetName !== afterBsTargetName) addLog('BS 대상자 성명 수정', r.id, beforeTarget, beforeBsTargetName, afterBsTargetName, reason);
-  if(beforeBsTargetPhone !== afterBsTargetPhone) addLog('BS 대상자 연락처 수정', r.id, beforeTarget, beforeBsTargetPhone, afterBsTargetPhone, reason);
-  if(beforeBsTargetDept !== afterBsTargetDept) addLog('BS 소속부서 수정', r.id, beforeTarget, beforeBsTargetDept, afterBsTargetDept, reason);
-  if(beforeBsTargetTitle !== afterBsTargetTitle) addLog('BS 직책 수정', r.id, beforeTarget, beforeBsTargetTitle, afterBsTargetTitle, reason);
-  if(beforeBsTargetEmpNo !== afterBsTargetEmpNo) addLog('BS 사원번호 수정', r.id, beforeTarget, beforeBsTargetEmpNo, afterBsTargetEmpNo, reason);
 }
 
   // 실제 데이터 반영: 이후 [현황 저장] 시 이 값들이 엑셀로 저장됩니다.
@@ -4855,11 +4870,6 @@ if(afterFormType === 'bs'){
   r.bsReceiver = afterBsReceiver;
   r.bsDeceased = afterBsDeceased;
   r.bsQty = afterBsQty;
-  r.bsTargetName  = afterBsTargetName;
-  r.bsTargetPhone = afterBsTargetPhone;
-  r.bsTargetDept  = afterBsTargetDept;
-  r.bsTargetTitle = afterBsTargetTitle;
-  r.bsTargetEmpNo = afterBsTargetEmpNo;
 
   r.recipient = [afterBsHall, afterBsReceiver].filter(Boolean).join('\n');
   r.relation = afterBsDeceased;
