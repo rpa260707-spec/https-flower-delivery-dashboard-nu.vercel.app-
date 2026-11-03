@@ -1569,6 +1569,7 @@ padding-left:6px!important;
 <div><label>거래처</label><input id="d-client" placeholder="거래처 입력"></div>
 <div><label>발송사유</label><input id="d-reason" placeholder="예: 모친 부고"></div>
 <div><label>발신 문서번호</label><input id="d-docno" placeholder="예: 전략구매-2026-0123"></div>
+<div class="detail-general-only detail-cond-only hidden"><label>故고인</label><input id="d-deceased" placeholder="예: 故 홍길동"></div>
 <div class="detail-general-only"><label>관계(실적 등)</label><input id="d-relation" placeholder="관계 또는 실적 내용"></div>
               </div>
             </div>
@@ -1743,6 +1744,7 @@ padding-left:6px!important;
       </div>
 
       <div><label>발신 문서번호</label><input id="a-docno" placeholder="예: 전략구매-2026-0123"></div>
+      <div class="general-only add-cond-only hidden"><label>故고인</label><input id="a-deceased" placeholder="예: 故 홍길동"></div>
       <div class="general-only"><label>관계(실적 등)</label><input id="a-relation" placeholder="관계 또는 실적 내용"></div>
       <div class="full general-only"><label>배송장소/수신자
         <button type="button" id="a-recipient-form" class="btn ghost small"
@@ -2193,6 +2195,10 @@ function applyItemPresetTo(presetSelector, itemSelector, priceSelector){
   if(Object.prototype.hasOwnProperty.call(ITEM_PRICE_MAP, selected)){
     priceInput.value = ITEM_PRICE_MAP[selected];
   }
+
+  // 근조화환 · 쌀화환을 고르면 문구에 경조사어가 들어갑니다.
+  if(itemSelector === '#a-item'){ syncMessageDefault('#a-message', addFormMode, selected); syncCondFields('add', selected); }
+  if(itemSelector === '#d-item'){ syncMessageDefault('#d-message', detailFormMode, selected); syncCondFields('detail', selected); }
 }
 
 function applyClientPresetTo(presetSelector, clientSelector){
@@ -3651,7 +3657,7 @@ if(r.formType === 'bs'){
   $('#kakao-resend-wrap').style.display = r.status === 'completed' ? 'block' : 'none';
   // 문구가 비어 있으면 기본 문구를 실제 값으로 채워둡니다.
   // (예시 글씨가 아니라 실제 값이라야 저장 및 카카오 안내문에 반영됩니다.)
-  $('#d-message').value=r.message || defaultMessageFor(r.formType);
+  $('#d-message').value=r.message || defaultMessageFor(r.formType, r.item);
   $('#d-notice').value=r.notice || '';
   if($('#d-docno')) $('#d-docno').value = r.docNo || '';
   if($('#d-relation')) $('#d-relation').value = r.relation || '';
@@ -3661,6 +3667,8 @@ if(r.formType === 'bs'){
   $('#d-bs-hall').value = r.bsHall || '';
   $('#d-bs-receiver').value = r.bsReceiver || '';
   $('#d-bs-deceased').value = r.bsDeceased || '';
+  if($('#d-deceased')) $('#d-deceased').value = r.bsDeceased || '';
+  syncCondFields('detail', r.item);
   $('#d-bs-qty').value = r.bsQty || DEFAULT_BS_QTY;
 
   setDetailFormMode(r.formType === 'bs' ? 'bs' : 'normal');
@@ -3678,6 +3686,7 @@ function setDetailFormMode(mode){
 
   $('#bs-detail-fields')?.classList.toggle('hidden', !isBs);
   $$('.detail-general-only').forEach(el=>el.classList.toggle('hidden', isBs));
+  if(!isBs) syncCondFields('detail', $('#d-item')?.value || '');
 
   const normalBtn = $('#detail-normal-mode');
   const bsBtn = $('#detail-bs-mode');
@@ -3741,7 +3750,7 @@ function buildKakaoCompleteMessage(row){
       '[화환배송요청 안내_FITI시험연구원 전략구매팀]',
       '안녕하세요, 아래 BS 화환배송건을 요청합니다.',
       bsBodyText(row),
-      `문구:\n${row.message || defaultMessageFor(row.formType)}`
+      `문구:\n${row.message || defaultMessageFor(row.formType, row.item)}`
     ];
     if(row.docNo) bsSections.push(`■ 발신 문서번호: ${row.docNo}`);
 
@@ -3759,11 +3768,12 @@ function buildKakaoCompleteMessage(row){
       `신청일: ${row.date || '-'}`,
       `품목명: ${row.item || '-'}`,
       `거래처/발송사유: ${row.client || row.reason || '-'}`,
+      ...(String(row.bsDeceased || '').trim() ? [`고인: ${row.bsDeceased}`] : []),
       `관계(실적 등): ${row.relation || '-'}`,
       '배송장소/수신자:',
       row.recipient || '-'
     ].join('\n'),
-    `문구:\n${row.message || defaultMessageFor(row.formType)}`
+    `문구:\n${row.message || defaultMessageFor(row.formType, row.item)}`
   ];
 
   if(row.notice) sections.push(`부고안내/청첩장:\n${row.notice}`);
@@ -3994,7 +4004,45 @@ const DEFAULT_MESSAGE = '(재)FITI 시험연구원 원장 윤주경';
 /* BS(부고) 건은 리본에 경조사어가 먼저 오고 보내는분이 아래 붙습니다.
    일반 건(결혼 · 축하)에는 경조사어를 쓰지 않습니다. */
 const DEFAULT_MESSAGE_BS = BS_CONDOLENCE + String.fromCharCode(10) + BS_SENDER_TEXT;
-const defaultMessageFor = (formType) => formType === 'bs' ? DEFAULT_MESSAGE_BS : DEFAULT_MESSAGE;
+/* 조의 품목이면 리본에 경조사어가 먼저 옵니다.
+   양식(BS/일반)이 아니라 품목으로 가립니다 — 일반 양식으로도 근조화환이 나갑니다. */
+/* 조의 품목(근조화환 · 쌀화환)은 일반 양식으로도 나갑니다.
+   그때도 업체에 고인 성함을 알려야 하는데 칸이 BS 양식에만 있었습니다.
+   품목을 조의로 고르면 일반 양식에도 「故고인」 칸이 나타납니다. */
+function syncCondFields(scope, item){
+  const on = isCondolenceItem(item);
+  const sel = scope === 'detail' ? '.detail-cond-only' : '.add-cond-only';
+  $$(sel).forEach(el => el.classList.toggle('hidden', !on));
+}
+
+/* 지금 화면에 적힌 고인 성함 — 양식에 따라 칸이 다릅니다. */
+function deceasedOf(scope){
+  const detail = scope === 'detail';
+  const mode = detail ? detailFormMode : addFormMode;
+  if (mode === 'bs') return $(detail ? '#d-bs-deceased' : '#bs-deceased')?.value.trim() || '';
+  // 일반 양식은 조의 품목일 때만 — 감춰진 칸에 남은 글자를 담지 않습니다
+  const item = $(detail ? '#d-item' : '#a-item')?.value || '';
+  if (!isCondolenceItem(item)) return '';
+  return $(detail ? '#d-deceased' : '#a-deceased')?.value.trim() || '';
+}
+
+function isCondolenceItem(item){
+  const t = String(item || '');
+  return t.indexOf('근조') >= 0 || t.indexOf('쌀화환') >= 0;
+}
+const defaultMessageFor = (formType, item) =>
+  (formType === 'bs' || isCondolenceItem(item)) ? DEFAULT_MESSAGE_BS : DEFAULT_MESSAGE;
+
+/* 품목을 바꾸면 문구 기본값도 따라갑니다.
+   손으로 고쳐 둔 문구는 건드리지 않습니다 — 기본값 그대로일 때만 바꿉니다. */
+function syncMessageDefault(msgSelector, formType, item){
+  const box = $(msgSelector);
+  if (!box) return;
+  const cur = String(box.value || '').trim();
+  if (cur && cur !== DEFAULT_MESSAGE && cur !== DEFAULT_MESSAGE_BS) return;
+  box.value = defaultMessageFor(formType, item);
+}
+
 
 // BS 양식 수량 기본값
 const DEFAULT_BS_QTY = '화환,근조기2개,용품';
@@ -4093,9 +4141,10 @@ function setAddFormMode(mode){
   if (msgBox) {
     const cur = String(msgBox.value || '').trim();
     if (!cur || cur === DEFAULT_MESSAGE || cur === DEFAULT_MESSAGE_BS) {
-      msgBox.value = defaultMessageFor(addFormMode);
+      msgBox.value = defaultMessageFor(addFormMode, $('#a-item')?.value);
     }
   }
+  syncCondFields('add', $('#a-item')?.value || '');
 
   const modalTitle = $('#add-modal h2');
   if(modalTitle){
@@ -4136,6 +4185,8 @@ function clearAddForm(){
   if($('#bs-funeral')) $('#bs-funeral').value='';
   if($('#bs-recipient')) $('#bs-recipient').value='';
   if($('#bs-deceased')) $('#bs-deceased').value='';
+  if($('#a-deceased')) $('#a-deceased').value='';
+  syncCondFields('add', '');
   if($('#bs-qty')) $('#bs-qty').value=DEFAULT_BS_QTY;
 
   setAddFormMode('normal');
@@ -4180,7 +4231,7 @@ const row={
 
   bsHall: addFormMode === 'bs' ? ($('#bs-funeral')?.value.trim() || '') : '',
   bsReceiver: addFormMode === 'bs' ? ($('#bs-recipient')?.value.trim() || '') : '',
-  bsDeceased: addFormMode === 'bs' ? ($('#bs-deceased')?.value.trim() || '') : '',
+  bsDeceased: deceasedOf('add'),
   bsQty: addFormMode === 'bs' ? ($('#bs-qty')?.value.trim() || '') : '',
 
   item,
@@ -4868,7 +4919,7 @@ $('#save-detail').addEventListener('click',()=>{
 if(afterFormType === 'bs'){
   r.bsHall = afterBsHall;
   r.bsReceiver = afterBsReceiver;
-  r.bsDeceased = afterBsDeceased;
+  r.bsDeceased = afterFormType === 'bs' ? afterBsDeceased : deceasedOf('detail');
   r.bsQty = afterBsQty;
 
   r.recipient = [afterBsHall, afterBsReceiver].filter(Boolean).join('\n');
