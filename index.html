@@ -1400,13 +1400,25 @@ padding-left:6px!important;
     .up-row .status{grid-column:2;justify-self:end}
   }
   </style>
+<style id="fiti-mobile">
+/* 폰 가독성 공통(2026-11-11) — 640px 이하에서 작은 글씨를 13px 로 올리고, 단어 중간 줄바꿈 · 가로 넘침을 막습니다 */
+@media (max-width:640px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{word-break:keep-all;overflow-wrap:break-word;overflow-x:hidden}
+  small,th,td,li,dd,dt,summary,figcaption,label,.card__k,.cb__foot,.rate__u,.hint,.msg,.muted,.text-xs,.text-\[10px\],.text-\[11px\]{font-size:13px!important;line-height:1.55}
+  img,video{max-width:100%;height:auto}
+  .cb__chips{flex-wrap:wrap!important;overflow:visible!important}
+  pre,code{white-space:pre-wrap}
+  .badge-top{font-size:12.5px!important}
+}
+</style>
 </head>
 <body>
   <section id="login-screen" class="login">
     <div class="login-card">
       <span class="badge-top">v2.0 · 상단 그래프형 대시보드</span>
       <h1>전략구매팀<br>화환 배송 관리 시스템</h1>
-      <p class="desc">로그인 후 <b>화환배송관리.xlsx</b> 파일을 불러와 배송상태, 담당자, 관리메모를 수정하고 다시 엑셀 파일로 저장합니다. 누가 무엇을 수정했는지는 변경 이력에 기록됩니다.</p>
+      <p class="desc">로그인 후 <b>화환배송관리.xlsx</b> 파일을 불러와 배송상태, 신청자, 관리메모를 수정하고 다시 엑셀 파일로 저장합니다. 누가 무엇을 수정했는지는 변경 이력에 기록됩니다.</p>
      <form id="login-form" class="form">
   <div><label>사번 또는 이름</label><input id="login-id" required placeholder="예: 홍길동 또는 2026001"></div>
   <div><label>접속 비밀번호</label><input id="login-pw" type="password" required placeholder="전략구매팀에서 받은 번호" autocomplete="current-password"></div>
@@ -1501,7 +1513,7 @@ padding-left:6px!important;
           <div><label>신청월</label><select id="filter-month"><option value="all">전체</option></select></div>
           <div><label>품목</label><select id="filter-item"><option value="all">전체</option></select></div>
           <div><label>발송사유</label><select id="filter-reason"><option value="all">전체</option></select></div>
-          <div><label>담당자</label><select id="filter-manager"><option value="all">전체</option></select></div>
+          <div><label>신청자</label><select id="filter-manager"><option value="all">전체</option></select></div>
           <button id="clear-filter" class="btn ghost">필터 초기화</button>
         </div>
       </section>
@@ -1617,7 +1629,7 @@ padding-left:6px!important;
               <div class="form">
                 <div><label>상태 변경</label><select id="d-status"></select></div>
                   <div><label>관리메모</label><textarea id="d-memo" rows="4"></textarea></div>
-                <div><label>담당자</label><input id="d-manager" placeholder="담당자 입력"></div>
+                <div><label>신청자</label><input id="d-manager" placeholder="신청자 (예: 홍길동 · 섬유소재평가팀)"></div>
       <div><label>변경 사유(선택)</label><input id="d-reason-change" placeholder="예: 업체 배송 요청 확인, 담당자 확인 요청 등"></div>
               </div>
               <div class="sidebar-actions edit-only"><button id="delete-detail" class="btn red" type="button">삭제</button><button id="save-detail" class="btn" type="button">저장</button></div>
@@ -1636,7 +1648,7 @@ padding-left:6px!important;
 
       <section class="panel" style="margin-top:16px">
         <h2>변경 이력</h2>
-        <p class="hint" style="margin-bottom:10px">상태/담당자/메모 변경과 신규 등록, 엑셀 재업로드 시 삭제 감지 내역만 기록됩니다. 조회, 검색, 필터 변경은 이력에 남기지 않습니다.</p>
+        <p class="hint" style="margin-bottom:10px">상태/신청자/메모 변경과 신규 등록, 엑셀 재업로드 시 삭제 감지 내역만 기록됩니다. 조회, 검색, 필터 변경은 이력에 남기지 않습니다.</p>
         <div class="table-wrap log-table-wrap" style="box-shadow:none"><table><thead><tr><th>시간</th><th>사용자</th><th>작업</th><th>대상</th><th>변경 전</th><th>변경 후</th><th>사유</th></tr></thead><tbody id="log-body"></tbody></table></div>
         <div id="mobile-log-list" class="mobile-log-list"></div>
       </section>
@@ -1754,7 +1766,7 @@ padding-left:6px!important;
       <div class="full"><label>부고안내/청첩장</label><textarea id="a-notice" rows="3" placeholder="관련 안내 내용 입력"></textarea></div>
 
       <div class="full"><label>관리메모</label><textarea id="a-memo" rows="3" placeholder="관리메모 입력"></textarea></div>
-      <div><label>담당자</label><input id="a-manager" placeholder="담당자 입력"></div>
+      <div><label>신청자</label><input id="a-manager" placeholder="신청자 (예: 홍길동 · 섬유소재평가팀)"></div>
       <div><label>상태</label><select id="a-status"></select></div>
     </div>
 
@@ -3316,7 +3328,7 @@ function renderUpcoming(){
       const place = String(r.recipient || '').split('\n').map(s => s.trim()).filter(Boolean)[0] || '-';
       // 거래처/발송사유 칸이 「누가 · 무슨 일로」를 담습니다.
       // 첫 줄의 첫 조각만 씁니다 — 「결혼(11/1)」 같은 괄호 안 날짜는 건드리지 않습니다.
-      const who = String(r.client || r.reason || '').split('\n')[0].split(',')[0].trim();
+      const who = String((r.manager && !ADMIN_USER_NAMES.includes(r.manager) ? r.manager : '') || r.client || r.reason || '').split('\n')[0].split(',')[0].trim();
       return `<button type="button" class="up-row" data-id="${r.id}">`
         + `<span class="up-time${x.time ? '' : ' na'}">${escapeHtml(x.time || '시간미정')}</span>`
         + `<span class="up-item">${escapeHtml(r.item || '-')}</span>`
@@ -3520,7 +3532,7 @@ function renderTable(){
             <div class="mobile-card-value">${escapeHtml(r.reason||'-')}</div>
           </div>
           <div class="mobile-card-field">
-            <div class="mobile-card-label">담당자</div>
+            <div class="mobile-card-label">신청자</div>
             <div class="mobile-card-value">${escapeHtml(r.manager||'-')}</div>
           </div>
           <div class="mobile-card-field">
@@ -3791,7 +3803,7 @@ function openKakaoModal(row){
 $('#kakao-target-info').innerHTML =
   `<b>${escapeHtml(displayTargetName(row))}</b><br>` +
     `배송장소/수신자: ${escapeHtml(row.recipient || '-')}<br>` +
-    `담당자: ${escapeHtml(row.manager || '-')} / 상태: 배송요청`;
+    `신청자: ${escapeHtml(row.manager || '-')} / 상태: 배송요청`;
 
   $('#kakao-message-text').value = buildKakaoCompleteMessage(row);
   $('#kakao-modal').classList.remove('hidden');
@@ -4180,7 +4192,7 @@ function setAddFormMode(mode){
 function clearAddForm(){
   $('#a-date').value=todayInputValue();
    $('#a-item').value=''; $('#a-price').value=''; $('#a-client').value=''; $('#a-reason').value=''; $('#a-relation').value=''; if($('#a-docno')) $('#a-docno').value='';
-  $('#a-recipient').value=''; $('#a-message').value=DEFAULT_MESSAGE; $('#a-notice').value=''; $('#a-manager').value=state.user || ''; $('#a-status').value='pending'; $('#a-memo').value='';
+  $('#a-recipient').value=''; $('#a-message').value=DEFAULT_MESSAGE; $('#a-notice').value=''; $('#a-manager').value=''; $('#a-status').value='pending'; $('#a-memo').value='';
 
   if($('#bs-funeral')) $('#bs-funeral').value='';
   if($('#bs-recipient')) $('#bs-recipient').value='';
@@ -4429,7 +4441,7 @@ function saveWorkbookOffline(filename, sheets){
   downloadXlsx(filename, files);
 }
 function buildDeliveryRows(){
-  const header=['신청일','품목명','단가','거래처명','발송사유','발신 문서번호','관계(실적 등)','배송장소/수신자','문구','부고안내/청첩장','관리메모','담당자','상태'];
+  const header=['신청일','품목명','단가','거래처명','발송사유','발신 문서번호','관계(실적 등)','배송장소/수신자','문구','부고안내/청첩장','관리메모','신청자','상태'];
   return [header, ...state.data.map(r=>[r.date,r.item,r.price,r.client,r.reason,r.docNo,r.relation,r.recipient,r.message,r.notice,r.memo,r.manager,statusLabel(r.status)])];
 }
 function buildLogRows(){
@@ -4564,7 +4576,7 @@ async function exportLogXlsx(){
     icon:  '📋',
     title: '변경이력을 엑셀로 내려받습니다',
     q:     '계속 진행할까요?',
-    desc:  '상태 · 담당자 · 메모 변경, 신규 등록, 삭제 감지 내역이 담깁니다.',
+    desc:  '상태 · 신청자 · 메모 변경, 신규 등록, 삭제 감지 내역이 담깁니다.',
     no:    '취소',
     yes:   '내려받기'
   });
@@ -4899,7 +4911,7 @@ $('#save-detail').addEventListener('click',()=>{
   r.notice = afterNotice;
 }
   if(beforeStatus !== afterStatus) addLog('상세 상태 변경', r.id, beforeTarget, beforeStatus, afterStatus, reason);
-  if(beforeManager !== afterManager) addLog('담당자 변경', r.id, beforeTarget, beforeManager, afterManager, reason);
+  if(beforeManager !== afterManager) addLog('신청자 변경', r.id, beforeTarget, beforeManager, afterManager, reason);
   if(beforeMemo !== afterMemo) addLog('관리메모 수정', r.id, beforeTarget, beforeMemo, afterMemo, reason);
   if(afterFormType === 'bs'){
   if(beforeBsHall !== afterBsHall) addLog('BS 빈소 수정', r.id, beforeTarget, beforeBsHall, afterBsHall, reason);
