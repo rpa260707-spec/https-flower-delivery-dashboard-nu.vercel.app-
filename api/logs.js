@@ -21,7 +21,8 @@ const BLOB_OPT = (() => {
 const FILE_NAME = 'logs.json';
 
 // 변경이력 저장(POST)도 관리자 계정에서만 허용합니다.
-const ADMIN_USER_NAME = '전략구매팀';
+// deliveries.js · 화면(index.html)과 같은 목록이어야 합니다 — 한쪽만 고치면 「관리자」 로그인이 이력 저장에서 막힙니다.
+const ADMIN_USER_NAMES = ['전략구매팀', '관리자'];
 
 async function streamToText(stream) {
   const reader = stream.getReader();
@@ -80,11 +81,11 @@ export default async function handler(req, res) {
       const body = req.body || {};
       const requestUser = String(body.user || body.lastSavedBy || '').trim();
 
-      if (requestUser !== ADMIN_USER_NAME) {
+      if (!ADMIN_USER_NAMES.includes(requestUser)) {
         return res.status(403).json({
           success: false,
           code: 'FORBIDDEN',
-          message: `조회 전용 계정입니다. 변경이력 저장은 관리자(${ADMIN_USER_NAME}) 계정에서만 가능합니다.`
+          message: `조회 전용 계정입니다. 변경이력 저장은 관리자(${ADMIN_USER_NAMES.join(' 또는 ')}) 계정에서만 가능합니다.`
         });
       }
 
