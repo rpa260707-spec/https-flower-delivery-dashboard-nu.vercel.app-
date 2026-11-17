@@ -1571,7 +1571,7 @@ padding-left:6px!important;
   <label>거래처명 선택</label>
   <select id="d-client-preset">
     <option value="">선택</option>
-    <option value="000팀000_ 결혼(/)">결혼</option>
+    <option value="000팀000_결혼(/)">결혼</option>
     <option value="임직원(비에스)_000">임직원(비에스)</option>
     <option value="000님 장인(故 OOO 님) 부고">부고</option>
     <option value="custom">직접입력</option>
@@ -1724,7 +1724,7 @@ padding-left:6px!important;
         <label>거래처명 선택</label>
         <select id="a-client-preset">
           <option value="">선택</option>
-          <option value="000팀000_ 결혼(/)">결혼</option>
+          <option value="000팀000_결혼(/)">결혼</option>
           <option value="임직원(비에스)_000">임직원(비에스)</option>
           <option value="000님 장인(故 OOO 님) 부고">부고</option>
           <option value="custom">직접입력</option>
@@ -3842,7 +3842,7 @@ function buildApplicantMessage(row){
   const place = (pm ? pm[1] : (row.bsFuneral || rec.split('\n')[0] || '-')).trim() || '-';
   const item = row.item || '화환';
   const lines = [];
-  const sad = isCondolenceItem(item, [row.client, row.reason].join(' '));
+  const sad = isCondolenceItem(item, [row.client, row.reason, row.recipient].join(' '));
   if (sad) {
     lines.push('[전략구매팀] 삼가 고인의 명복을 빕니다.');
     lines.push('신청하신 ' + item + '을(를) 아래와 같이 발송하였습니다.');
@@ -4096,7 +4096,7 @@ function isCondolenceItem(item, ctx){
   if (t.indexOf('근조') >= 0) return true;
   if (t.indexOf('쌀화환') < 0) return false;
   if (ctx === undefined) {
-    ctx = ['#a-client-preset','#a-client','#a-reason','#d-client-preset','#d-client','#d-reason']
+    ctx = ['#a-client-preset','#a-client','#a-reason','#a-recipient','#d-client-preset','#d-client','#d-reason','#d-recipient']
       .map(s => (document.querySelector(s) || {}).value || '').join(' ');
   }
   // 쌀화환은 부고 정황(부고 · 조의 · 별세 · 빈소 · 장례 · 故 · 비에스)이 있을 때만 조의로 봅니다.
@@ -4110,8 +4110,8 @@ function resyncJoy(scope){
   syncMessageDefault(d ? '#d-message' : '#a-message', d ? detailFormMode : addFormMode, item);
   syncCondFields(scope, item);
 }
-['#a-client-preset','#a-client','#a-reason'].forEach(s => document.querySelector(s)?.addEventListener('change', () => resyncJoy('add')));
-['#d-client-preset','#d-client','#d-reason'].forEach(s => document.querySelector(s)?.addEventListener('change', () => resyncJoy('detail')));
+['#a-client-preset','#a-client','#a-reason','#a-recipient'].forEach(s => document.querySelector(s)?.addEventListener('change', () => resyncJoy('add')));
+['#d-client-preset','#d-client','#d-reason','#d-recipient'].forEach(s => document.querySelector(s)?.addEventListener('change', () => resyncJoy('detail')));
 const defaultMessageFor = (formType, item) =>
   (formType === 'bs' || isCondolenceItem(item)) ? DEFAULT_MESSAGE_BS : DEFAULT_MESSAGE;
 
