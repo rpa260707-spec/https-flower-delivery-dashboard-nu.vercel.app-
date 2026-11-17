@@ -1686,7 +1686,7 @@ padding-left:6px!important;
       <div id="bs-badge" class="bs-badge hidden">BS 전용 양식</div>
       <div>
         <h2>신규 화환 추가</h2>
-        <p class="hint">대시보드에서 새 화환 배송 건을 추가합니다. 추가 후 [배송현황 저장]을 눌러야 엑셀 파일에 반영됩니다.</p>
+        <p class="hint">대시보드에서 새 화환 배송 건을 추가합니다. 등록하면 서버에 자동 저장되며, 엑셀 파일은 [배송현황 저장]으로 내려받습니다.</p>
       </div>
       <button class="btn ghost small close-modal">닫기</button>
     </div>
@@ -2633,7 +2633,8 @@ async function saveLogsToServer(){
   return result;
 }
 
-async function saveAndExportDelivery(){
+async function saveAndExportDelivery(opts){
+  const auto = !!(opts && opts.auto);   // 신규 등록 직후 자동 저장 — 엑셀 내려받기는 건너뜀 (2026-11-17)
   if(!requireEdit()) return;
   if(saveInProgress){
     return;
@@ -2686,7 +2687,7 @@ async function saveAndExportDelivery(){
     /* 일부러 await 하지 않습니다 — 서버 저장은 이미 끝났으니
        사용자가 카드에서 고르는 동안 저장 버튼을 붙잡아 둘 이유가 없습니다.
        대신 실패는 여기서 받아야 합니다. 안 그러면 조용히 묻힙니다. */
-    exportDeliveryXlsx().catch(err => {
+    if (!auto) exportDeliveryXlsx().catch(err => {
       console.error(err);
       alert(err.message || '엑셀 저장 중 오류가 발생했습니다. 서버 저장은 이미 끝났습니다.');
     });
@@ -2819,6 +2820,17 @@ function addLog(action, rowId, target, before, after, reason=''){
     reason:String(reason ?? '')
   });
   limitLogs();
+  // 등록 · 수정 · 상태 변경 · 삭제는 바로 서버에 저장합니다(2026-11-17). 엑셀 재업로드 감지는 제외.
+  if (!/원본 삭제 감지/.test(action)) scheduleAutoSave();
+}
+let autoSaveTimer = null;
+function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  // 한 번 고칠 때 이력이 여러 줄 쌓이므로 잠깐 모았다가 한 번만 저장합니다
+  autoSaveTimer = setTimeout(() => {
+    if (saveInProgress) { scheduleAutoSave(); return; }
+    saveAndExportDelivery({ auto: true });
+  }, 1200);
 }
 function isDeletedLog(log){ return String(log?.action || '').includes('삭제') || String(log?.after || '').includes('삭제됨') || String(log?.reason || '').includes('삭제'); }
 function logActionHtml(log){ const deleted=isDeletedLog(log); const label=deleted ? '삭제됨 / 원본 삭제 감지' : String(log.action || '-'); return `<span class="log-badge ${deleted ? 'deleted' : 'normal'}">${escapeHtml(label)}</span>`; }
@@ -3830,7 +3842,8 @@ function buildApplicantMessage(row){
   const place = (pm ? pm[1] : (row.bsFuneral || rec.split('\n')[0] || '-')).trim() || '-';
   const item = row.item || '화환';
   const lines = [];
-  if (isCondolenceItem(item)) {
+  const sad = isCondolenceItem(item, [row.client, row.reason].join(' '));
+  if (sad) {
     lines.push('[전략구매팀] 삼가 고인의 명복을 빕니다.');
     lines.push('신청하신 ' + item + '을(를) 아래와 같이 발송하였습니다.');
   } else {
@@ -3838,7 +3851,7 @@ function buildApplicantMessage(row){
     lines.push('원장 명의 ' + item + '을(를) 아래와 같이 배송할 예정입니다.');
   }
   lines.push('');
-  lines.push((isCondolenceItem(item) ? '빈소' : '배송장소') + ' : ' + place);
+  lines.push((sad ? '빈소' : '배송장소') + ' : ' + place);
   lines.push('품목 : ' + item + (row.qty ? ' ' + row.qty : ''));
   if (when) lines.push('배송 예정 : ' + when);
   lines.push('');
@@ -4075,10 +4088,30 @@ function deceasedOf(scope){
   return $(detail ? '#d-deceased' : '#a-deceased')?.value.trim() || '';
 }
 
-function isCondolenceItem(item){
+/* 쌀화환은 결혼 · 축하에도 나갑니다(2026-11-17). 근조는 늘 조의,
+   쌀화환은 거래처명 · 발송사유에 결혼 · 축하 등이 있으면 조의가 아닙니다. */
+function JOY(){ return /결혼|웨딩|예식|축하|개업|개소|취임|승진|창립|준공/; }
+function isCondolenceItem(item, ctx){
   const t = String(item || '');
-  return t.indexOf('근조') >= 0 || t.indexOf('쌀화환') >= 0;
+  if (t.indexOf('근조') >= 0) return true;
+  if (t.indexOf('쌀화환') < 0) return false;
+  if (ctx === undefined) {
+    ctx = ['#a-client-preset','#a-client','#a-reason','#d-client-preset','#d-client','#d-reason']
+      .map(s => (document.querySelector(s) || {}).value || '').join(' ');
+  }
+  // 쌀화환은 부고 정황(부고 · 조의 · 별세 · 빈소 · 장례 · 故 · 비에스)이 있을 때만 조의로 봅니다.
+  // 아무 정보가 없을 때 조의 문구가 먼저 들어가던 것을 막습니다(11-17).
+  const c = String(ctx || '');
+  return !JOY().test(c) && /부고|조의|별세|빈소|장례|故|비에스|BS/.test(c);
 }
+function resyncJoy(scope){
+  const d = scope === 'detail';
+  const item = $(d ? '#d-item' : '#a-item')?.value || '';
+  syncMessageDefault(d ? '#d-message' : '#a-message', d ? detailFormMode : addFormMode, item);
+  syncCondFields(scope, item);
+}
+['#a-client-preset','#a-client','#a-reason'].forEach(s => document.querySelector(s)?.addEventListener('change', () => resyncJoy('add')));
+['#d-client-preset','#d-client','#d-reason'].forEach(s => document.querySelector(s)?.addEventListener('change', () => resyncJoy('detail')));
 const defaultMessageFor = (formType, item) =>
   (formType === 'bs' || isCondolenceItem(item)) ? DEFAULT_MESSAGE_BS : DEFAULT_MESSAGE;
 
@@ -4304,7 +4337,8 @@ const row={
   closeModals();
   resetFilters();
   renderAll();
-  alert('신규 화환 건이 추가되었습니다.\n엑셀 파일에 반영하려면 [배송현황 저장]을 눌러주세요.');
+  /* 등록만 하고 [배송현황 저장]을 안 누르면 새로 고칠 때 건이 사라졌습니다(11-17 강경모 건).
+     등록하자마자 서버에 저장합니다 — addLog 가 scheduleAutoSave() 를 부릅니다. */
 }
 
 // ============================== 저장 기능 ==============================
