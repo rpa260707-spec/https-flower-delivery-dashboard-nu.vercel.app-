@@ -3349,11 +3349,11 @@ function renderUpcoming(){
         : recLines.find(s => !/^(배\s*송\s*일|시\s*간|연\s*락\s*처)\s*[:：]/.test(s))) || '-';
       // 거래처/발송사유 칸이 「누가 · 무슨 일로」를 담습니다.
       // 첫 줄의 첫 조각만 씁니다 — 「결혼(11/1)」 같은 괄호 안 날짜는 건드리지 않습니다.
-      const who = String((r.manager && !ADMIN_USER_NAMES.includes(r.manager) ? r.manager : '') || r.client || r.reason || '').split('\n')[0].split(',')[0].trim();
+      const who = String(r.client || r.reason || '').split('\n')[0].split(',')[0].trim();
       return `<button type="button" class="up-row" data-id="${r.id}">`
         + `<span class="up-time${x.time ? '' : ' na'}">${escapeHtml(x.time || '시간미정')}</span>`
         + `<span class="up-item">${escapeHtml(r.item || '-')}</span>`
-        + `<span class="up-who${who ? '' : ' na'}" title="${escapeHtml(who || '')}">${escapeHtml(who || '신청자 미기재')}</span>`
+        + `<span class="up-who${who ? '' : ' na'}" title="${escapeHtml(who || '')}">${escapeHtml(who || '업체명 미기재')}</span>`
         + `<span class="up-place">${escapeHtml(place)}</span>`
         + `<span class="status s-${escapeHtml(r.status)}">${escapeHtml(statusLabel(r.status))}</span>`
         + `</button>`;
