@@ -327,16 +327,16 @@
     .kakao-preview-info{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;color:#334155;font-size:13px;line-height:1.6;margin-bottom:12px}
     .kakao-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:16px}
     .btn.kakao{background:#FEE500!important;color:#191919!important;border:1px solid #f2d600!important}
-    /* 모바일: 90vh는 사파리 툴바에 가려짐 → dvh 사용, 하단 버튼 고정, 모달 열리면 맨위로 버튼 숨김 */
+    /* 모바일: 90vh는 사파리 툴바에 가려짐 → dvh 사용, 모달 하단 버튼줄 고정, 모달 열리면 맨위로 버튼 숨김 */
     .modal{max-height:90dvh}
     body:has(.modal-bg:not(.hidden)) #scroll-top-btn{display:none!important}
     @media(max-width:700px){
-      .kakao-modal{padding:10px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
-      .kakao-modal .modal{width:100%;max-height:calc(100dvh - 20px)}
+      .modal-bg{padding:10px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+      .modal{width:100%!important;max-height:calc(100dvh - 20px)!important}
       .kakao-message-box{min-height:160px}
-      .kakao-modal .kakao-actions{position:sticky;bottom:-16px;background:#fff;margin:12px -16px -16px;padding:10px 16px 14px;border-top:1px solid #e2e8f0;flex-wrap:nowrap}
-      .kakao-modal .kakao-actions .btn{flex:1;justify-content:center;padding-left:6px;padding-right:6px;white-space:nowrap}
-      .kakao-modal .kakao-actions[style]{position:static;border:0;padding:0;margin:0 0 8px}
+      .modal:has(> .modal-actions, > .kakao-actions){padding-bottom:0!important}
+      .modal > .modal-actions, .modal > .kakao-actions{position:sticky;bottom:0;z-index:2;background:#fff;margin:12px -16px 0;padding:10px 16px 14px;border-top:1px solid #e2e8f0;flex-wrap:nowrap}
+      .modal > .modal-actions .btn, .modal > .kakao-actions .btn{flex:1;justify-content:center;padding-left:6px;padding-right:6px;white-space:nowrap}
     }
 
 
